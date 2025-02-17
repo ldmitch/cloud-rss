@@ -1,17 +1,9 @@
-import { useState } from "react"
-import { Button, HStack } from "@chakra-ui/react"
+import LandingPage from './pages/LandingPage';
 
 function App() {
-  const [count, setCount] = useState(0)
-
   return (
-    <>
-      <HStack>
-        <Button onClick={() => setCount(count + 1)}>Click me</Button>
-        <Button>Click me</Button>
-      </HStack>
-    </>
-  )
+    <LandingPage />
+  );
 }
 
-export default App
+export default App;
