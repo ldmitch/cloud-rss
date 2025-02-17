@@ -27,6 +27,7 @@ const LandingPage: React.FC = () => {
     <VStack gap={8} p={8} align="stretch">
       <Heading as="h1" size="2xl" textAlign="center">Cloud RSS</Heading>
       <Text fontSize="lg" textAlign="center">Your browser-based RSS reader. Stay updated with the latest news.</Text>
+
       <SimpleGrid columns={[1, 2, 3]} gap={6}>
         {articles.map(article => (
           <Box key={article.id} borderWidth="1px" borderRadius="lg" overflow="hidden" p={4} _hover={{ shadow: "md" }}>
@@ -35,16 +36,17 @@ const LandingPage: React.FC = () => {
           </Box>
         ))}
       </SimpleGrid>
+
       <Button alignSelf="center" onClick={() => {
-         // simulate loading more articles
-         setArticles(prev => [
-           ...prev,
-           {
-             id: (prev.length + 1).toString(),
-             title: `Article ${prev.length + 1}`,
-             snippet: `This is a brief snippet of article ${prev.length + 1}.`
-           }
-         ]);
+        // simulate loading more articles
+        setArticles(prev => [
+          ...prev,
+          {
+            id: (prev.length + 1).toString(),
+            title: `Article ${prev.length + 1}`,
+            snippet: `This is a brief snippet of article ${prev.length + 1}.`
+          }
+        ]);
       }}>
         Load More
       </Button>
