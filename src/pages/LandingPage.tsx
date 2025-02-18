@@ -5,6 +5,8 @@ interface Article {
   id: string;
   title: string;
   snippet: string;
+  source: string;
+  publicationDatetime: string;
 }
 
 const LandingPage: React.FC = () => {
@@ -14,9 +16,9 @@ const LandingPage: React.FC = () => {
     // simulate fetching articles
     const timer = setTimeout(() => {
       const fakeArticles: Article[] = [
-        { id: "1", title: "Article 1", snippet: "This is a brief snippet of article 1." },
-        { id: "2", title: "Article 2", snippet: "This is a brief snippet of article 2." },
-        { id: "3", title: "Article 3", snippet: "This is a brief snippet of article 3." },
+        { id: "1", title: "Article 1", snippet: "This is a brief snippet of article 1.", source: "Source A", publicationDatetime: "2023-09-12" },
+        { id: "2", title: "Article 2", snippet: "This is a brief snippet of article 2.", source: "Source B", publicationDatetime: "2023-09-10" },
+        { id: "3", title: "Article 3", snippet: "This is a brief snippet of article 3.", source: "Source C", publicationDatetime: "2023-09-08" },
       ];
       setArticles(fakeArticles);
     }, 1000);
@@ -33,6 +35,9 @@ const LandingPage: React.FC = () => {
           <Box key={article.id} borderWidth="1px" borderRadius="lg" overflow="hidden" p={4} _hover={{ shadow: "md" }}>
             <Heading as="h3" size="md" mb={2}>{article.title}</Heading>
             <Text>{article.snippet}</Text>
+            <Text fontSize="sm" color="gray.500" mt={2}>
+              {article.source} • {article.publicationDatetime}
+            </Text>
           </Box>
         ))}
       </SimpleGrid>
@@ -44,7 +49,9 @@ const LandingPage: React.FC = () => {
           {
             id: (prev.length + 1).toString(),
             title: `Article ${prev.length + 1}`,
-            snippet: `This is a brief snippet of article ${prev.length + 1}.`
+            snippet: `This is a brief snippet of article ${prev.length + 1}.`,
+            source: `Source ${String.fromCharCode(65 + prev.length)}`,
+            publicationDatetime: `2023-09-${12 - prev.length}`
           }
         ]);
       }}>
