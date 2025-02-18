@@ -25,7 +25,7 @@ const Navbar: React.FC = () => {
     >
       <Flex align="center" justify="space-between">
         <Text fontSize="lg" fontWeight="semibold" width="400px" textAlign="left">
-          {currentTime.toLocaleString()}
+          {`${currentTime.toLocaleDateString("en-GB")} ${currentTime.toLocaleTimeString("en-GB", { hour12: false })}`}
         </Text>
         {/* Future options placeholder */}
         <Box>
