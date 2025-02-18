@@ -22,12 +22,23 @@ export const ArticleDialog: React.FC<ArticleDialogProps> = ({ isOpen, onClose, a
   return (
     <DialogRoot open={isOpen} onOpenChange={handleOpenChange}>
       <DialogBackdrop className="backdrop-blur-sm bg-black/30" />
-      <DialogContent className="max-w-3xl mx-4 rounded-lg">
+      <DialogContent 
+        style={{
+          width: '80vw',
+          height: '80vh',
+          maxWidth: 'none',
+          position: 'fixed',
+          left: '50%',
+          top: '40%',
+          transform: 'translate(-50%, -50%)',
+        }}
+        className="rounded-lg overflow-hidden"
+      >
         <DialogHeader className="font-semibold">
           {article.title}
           <DialogCloseTrigger />
         </DialogHeader>
-        <DialogBody>
+        <DialogBody className="overflow-y-auto h-[calc(80vh-4rem)]">
           <VStack gap={4} alignItems="stretch" pb={6}>
             <Text fontSize="sm" color="gray.500">
               {article.source} • {article.publicationDatetime}
