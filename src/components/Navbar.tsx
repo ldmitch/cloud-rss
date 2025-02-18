@@ -1,12 +1,14 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Box, Flex, Text } from '@chakra-ui/react';
 
-const Navbar: React.FC = () => {
-  const [currentTime, setCurrentTime] = useState(new Date());
+const Navbar = () => {
+  const [currentTime, setCurrentTime] = useState<Date>(new Date());
+
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentTime(new Date());
     }, 1000);
+    
     return () => clearInterval(timer);
   }, []);
 
