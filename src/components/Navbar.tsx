@@ -26,7 +26,7 @@ const Navbar = () => {
       zIndex={1000}
     >
       <Flex align="center" justify="space-between">
-        <Text fontSize="lg" fontWeight="semibold" width="400px" textAlign="left">
+        <Text fontSize="lg" fontWeight="semibold" width="400px" textAlign="left" color="black">
           {`${currentTime.toLocaleDateString("en-GB")} ${currentTime.toLocaleTimeString("en-GB", { hour12: false })}`}
         </Text>
         {/* Future options placeholder */}
