@@ -1,5 +1,5 @@
 import React from 'react';
-import { VStack, Text } from '@chakra-ui/react';
+import { VStack, Text, Heading } from '@chakra-ui/react';
 import { DialogRoot, DialogContent, DialogHeader, DialogBody, DialogCloseTrigger, DialogBackdrop } from './ui/dialog';
 
 interface ArticleDialogProps {
@@ -22,6 +22,7 @@ export const ArticleDialog: React.FC<ArticleDialogProps> = ({ isOpen, onClose, a
   return (
     <DialogRoot open={isOpen} onOpenChange={handleOpenChange}>
       <DialogBackdrop className="backdrop-blur-sm bg-black/30" />
+      
       <DialogContent 
         style={{
           width: '80vw',
@@ -35,15 +36,18 @@ export const ArticleDialog: React.FC<ArticleDialogProps> = ({ isOpen, onClose, a
         className="rounded-lg overflow-hidden"
       >
         <DialogHeader className="font-semibold">
-          {article.title}
+          <Heading as="h2" fontSize="4xl">
+            {article.title}
+          </Heading>
           <DialogCloseTrigger />
         </DialogHeader>
+
         <DialogBody className="overflow-y-auto h-[calc(80vh-4rem)]">
           <VStack gap={4} alignItems="stretch" pb={6}>
-            <Text fontSize="sm" color="gray.500">
+            <Text fontSize="lg" color="gray.500">
               {article.source} • {article.publicationDatetime}
             </Text>
-            <Text>
+            <Text fontSize="base">
               {article.content || article.snippet}
             </Text>
           </VStack>
