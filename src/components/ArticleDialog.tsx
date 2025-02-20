@@ -6,9 +6,10 @@ interface ArticleDialogProps {
   isOpen: boolean;
   onClose: () => void;
   article: {
+    id: string;
     title: string;
+    snippet: string;
     content?: string;
-    snippet?: string;
     source: string;
     publicationDatetime: string;
   };
@@ -22,8 +23,8 @@ export const ArticleDialog: React.FC<ArticleDialogProps> = ({ isOpen, onClose, a
   return (
     <DialogRoot open={isOpen} onOpenChange={handleOpenChange}>
       <DialogBackdrop className="backdrop-blur-sm bg-black/30" />
-      
-      <DialogContent 
+
+      <DialogContent
         style={{
           width: '80vw',
           height: '80vh',
