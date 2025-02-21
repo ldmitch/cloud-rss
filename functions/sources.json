@@ -13,10 +13,6 @@
             "url": "https://status.adguard.com/history.atom"
         },
         {
-            "name": "AdGuard VPN blog",
-            "url": "https://adguard-vpn.com/blog/rss-en.xml"
-        },
-        {
             "name": "AlternativeTo news",
             "url": "https://feed.alternativeto.net/news/all/"
         },
@@ -35,10 +31,6 @@
         {
             "name": "Asahi Linux updates",
             "url": "https://asahilinux.org/blog/index.xml"
-        },
-        {
-            "name": "Astro blog",
-            "url": "https://astro.build/rss.xml"
         },
         {
             "name": "Azure status",
@@ -69,10 +61,6 @@
             "url": "https://blog.cakewallet.com/rss"
         },
         {
-            "name": "Chrome releases",
-            "url": "https://chromereleases.googleblog.com/feeds/posts/default"
-        },
-        {
             "name": "Chromium blog",
             "url": "https://blog.chromium.org/atom.xml"
         },
@@ -85,20 +73,8 @@
             "url": "https://blog.cloudflare.com/rss"
         },
         {
-            "name": "Continue.dev blog",
-            "url": "https://blog.continue.dev/rss"
-        },
-        {
-            "name": "Control D blog",
-            "url": "https://blog.controld.com/rss"
-        },
-        {
             "name": "Cryptomator blog",
             "url": "https://cryptomator.org/feed.xml"
-        },
-        {
-            "name": "DahliaOS changelog",
-            "url": "https://github.com/dahliaos/releases/releases.atom"
         },
         {
             "name": "Daily Developer Tips",
@@ -125,10 +101,6 @@
             "url": "https://element.io/blog/rss/"
         },
         {
-            "name": "Enchanted releases",
-            "url": "https://github.com/AugustDev/enchanted/releases.atom"
-        },
-        {
             "name": "Ente blog",
             "url": "https://ente.io/blog/rss.xml"
         },
@@ -141,10 +113,6 @@
             "url": "https://blog.nightly.mozilla.org/feed"
         },
         {
-            "name": "Firefox Nightly notes",
-            "url": "https://www.mozilla.org/en-US/firefox/nightly/notes/feed"
-        },
-        {
             "name": "FoodNoms blog",
             "url": "https://www.foodnoms.com/blog/feed/rss.xml"
         },
@@ -155,10 +123,6 @@
         {
             "name": "Google Security blog",
             "url": "https://security.googleblog.com/feeds/posts/default"
-        },
-        {
-            "name": "GPT4All releases",
-            "url": "https://github.com/nomic-ai/gpt4all/releases.atom"
         },
         {
             "name": "GrapheneOS changelog",
@@ -205,10 +169,6 @@
             "url": "https://github.com/objective-see/LuLu/releases.atom"
         },
         {
-            "name": "LWN",
-            "url": "https://lwn.net/headlines/rss"
-        },
-        {
             "name": "Malwarebytes Labs",
             "url": "https://blog.malwarebytes.com/feed/"
         },
@@ -245,32 +205,12 @@
             "url": "https://mullvad.net/en/blog/feed/atom/"
         },
         {
-            "name": "Mullvad Browser releases",
-            "url": "https://github.com/mullvad/mullvad-browser/releases.atom"
-        },
-        {
-            "name": "Mullvad VPN releases",
-            "url": "https://github.com/mullvad/mullvadvpn-app/releases.atom"
-        },
-        {
             "name": "MySudo blog",
             "url": "https://mysudo.com/blog/feed"
         },
         {
             "name": "NetNewsWire news",
             "url": "https://nnw.ranchero.com/feed.xml"
-        },
-        {
-            "name": "Nikita Prokopov's blog",
-            "url": "https://tonsky.me/atom.xml"
-        },
-        {
-            "name": "NVM releases",
-            "url": "https://github.com/nvm-sh/nvm/releases.atom"
-        },
-        {
-            "name": "Ollama releases",
-            "url": "https://github.com/ollama/ollama/releases.atom"
         },
         {
             "name": "OpenAI status",
@@ -283,10 +223,6 @@
         {
             "name": "Paranoid Penguin",
             "url": "https://blog.paranoidpenguin.net/index.xml"
-        },
-        {
-            "name": "Preact releases",
-            "url": "https://github.com/preactjs/preact/releases.atom"
         },
         {
             "name": "PrivacyGuides blog",
@@ -309,28 +245,12 @@
             "url": "https://protonvpn.com/blog/feed/"
         },
         {
-            "name": "Raindrop blog",
-            "url": "https://blog.raindrop.io/feed"
-        },
-        {
-            "name": "Raindrop desktop app releases",
-            "url": "https://github.com/raindropio/desktop/releases.atom"
-        },
-        {
-            "name": "RaivoOTP release notes",
-            "url": "https://github.com/raivo-otp/ios-application/releases.atom"
-        },
-        {
             "name": "React Native blog",
             "url": "https://reactnative.dev/blog/rss.xml"
         },
         {
             "name": "React release notes",
             "url": "https://github.com/facebook/react/releases.atom"
-        },
-        {
-            "name": "Remix blog",
-            "url": "https://remix.run/blog/rss.xml"
         },
         {
             "name": "Safing blog",
@@ -381,20 +301,8 @@
             "url": "https://blog.torproject.org/feed.xml"
         },
         {
-            "name": "uBlock Origin Lite releases",
-            "url": "https://github.com/uBlockOrigin/uBOL-home/releases.atom"
-        },
-        {
-            "name": "uBlock Origin releases",
-            "url": "https://github.com/gorhill/uBlock/releases.atom"
-        },
-        {
             "name": "Vercel blog",
             "url": "https://vercel.com/atom"
-        },
-        {
-            "name": "Vercel status",
-            "url": "https://www.vercel-status.com/history.atom"
         },
         {
             "name": "Vite release notes",
@@ -405,24 +313,12 @@
             "url": "https://code.visualstudio.com/feed.xml"
         },
         {
-            "name": "Windscribe blog",
-            "url": "https://blog.windscribe.com/rss/"
-        },
-        {
             "name": "Wipr blog",
             "url": "https://kaylees.site/feed.xml"
         },
         {
             "name": "Zed blog",
             "url": "https://zed.dev/blog.rss"
-        },
-        {
-            "name": "Zed releases",
-            "url": "https://github.com/zed-industries/zed/releases.atom"
-        },
-        {
-            "name": "Zen Browser changelog",
-            "url": "https://zen-browser.app/feed.xml"
         }
     ]
 }
