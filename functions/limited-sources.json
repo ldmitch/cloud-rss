@@ -1,28 +1,16 @@
 {
     "sources": [
         {
-            "name": "AdGuard blog",
-            "url": "https://adguard.com/blog/rss-en.xml"
+            "name": "Hacker News",
+            "url": "https://hnrss.org/newest"
         },
         {
-            "name": "AdGuard DNS blog",
-            "url": "https://adguard-dns.io/blog/rss-en.xml"
+            "name": "React Blog",
+            "url": "https://react.dev/blog/feed.xml"
         },
         {
-            "name": "AdGuard status",
-            "url": "https://status.adguard.com/history.atom"
-        },
-        {
-            "name": "AdGuard VPN blog",
-            "url": "https://adguard-vpn.com/blog/rss-en.xml"
-        },
-        {
-            "name": "AlternativeTo news",
-            "url": "https://feed.alternativeto.net/news/all/"
-        },
-        {
-            "name": "Anthropic status",
-            "url": "https://status.anthropic.com/history.atom"
+            "name": "TypeScript Blog",
+            "url": "https://devblogs.microsoft.com/typescript/feed/"
         }
     ]
 }
