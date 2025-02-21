@@ -1,17 +1,52 @@
 import { SingleArticleResponse } from '../types';
-import DOMPurify from 'dompurify';
-import { JSDOM } from 'jsdom';
+import { XMLParser } from 'fast-xml-parser';
 
-// Initialize DOMPurify with a JSDOM window
-const window = new JSDOM('').window;
-const purify = DOMPurify(window);
+// Simple HTML parsing and cleaning without JSDOM
+function extractArticleContent(html: string): string {
+  const parser = new XMLParser({
+    ignoreAttributes: false,
+    parseTagValue: false,
+    trimValues: true,
+    htmlEntities: true
+  });
 
-// Configure DOMPurify to allow common article elements
-const ALLOWED_TAGS = [
-  'p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
-  'a', 'img', 'ul', 'ol', 'li', 'blockquote',
-  'code', 'pre', 'strong', 'em', 'br', 'div'
-];
+  try {
+    const parsed = parser.parse(html);
+    const article = findArticleContent(parsed);
+    return cleanAndFormatHTML(article);
+  } catch (error) {
+    // If XML parsing fails (due to invalid HTML), fall back to basic content extraction
+    return extractContentFallback(html);
+  }
+}
+
+function findArticleContent(parsed: any): string {
+  // Try to find the main article content in common locations
+  const possibleContent = [
+    parsed?.html?.body?.article,
+    parsed?.html?.body?.main,
+    parsed?.html?.body?.['article-content'],
+    parsed?.html?.body?.content,
+    parsed?.html?.body
+  ].find(x => x);
+
+  return JSON.stringify(possibleContent || parsed?.html?.body || '');
+}
+
+function cleanAndFormatHTML(content: string): string {
+  // Basic cleaning - remove scripts, styles, etc
+  return content
+    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+    .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '')
+    .replace(/<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi, '')
+    .replace(/<!--[\s\S]*?-->/g, '');
+}
+
+function extractContentFallback(html: string): string {
+  // Very basic fallback extractor
+  const body = html.match(/<body[^>]*>([\s\S]*)<\/body>/i)?.[1] || html;
+  return cleanAndFormatHTML(body);
+}
 
 export const onRequestGet: PagesFunction<{Params: {id: string}}> = async ({params}) => {
   try {
@@ -31,24 +66,9 @@ export const onRequestGet: PagesFunction<{Params: {id: string}}> = async ({param
     }
 
     const html = await articleResponse.text();
-    const dom = new JSDOM(html);
-    const document = dom.window.document;
+    const content = extractArticleContent(html);
 
-    // Basic content extraction (simplified readability-like approach)
-    const article = document.querySelector('article') || document.body;
-    
-    // Remove unwanted elements
-    ['script', 'style', 'iframe', 'nav', 'header', 'footer'].forEach(tag => {
-      article.querySelectorAll(tag).forEach(el => el.remove());
-    });
-
-    // Clean the HTML
-    const cleanHtml = purify.sanitize(article.innerHTML, {
-      ALLOWED_TAGS,
-      ALLOWED_ATTR: ['href', 'src', 'alt', 'title'],
-    });
-
-    const apiResponse: SingleArticleResponse = { content: cleanHtml };
+    const apiResponse: SingleArticleResponse = { content };
     return new Response(JSON.stringify(apiResponse), {
       headers: {
         'Content-Type': 'application/json',
