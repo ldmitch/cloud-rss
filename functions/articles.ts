@@ -1,5 +1,4 @@
-import Parser from 'rss-parser';
-import type { Handler, KVNamespace } from '@cloudflare/workers-types';
+import { DOMParser } from "@xmldom/xmldom";
 
 interface Article {
   id: string;
@@ -16,80 +15,76 @@ const sources = [
   { name: "TypeScript Blog", url: "https://devblogs.microsoft.com/typescript/feed/" },
 ];
 
-const parser = new Parser();
-
-// Helper function to update articles in KV
-async function updateArticles(kv: KVNamespace): Promise<void> {
-  const articles: Article[] = [];
-  let errorMessage = "";
-
-  for (const source of sources) {
-    try {
-      const feed = await parser.parseURL(source.url);
-      const sourceArticles = feed.items
-        .filter(item => item.link && item.title && (item.description || item.contentSnippet) && item.pubDate)
-        .map(item => ({
-          id: item.link!, // Use link as unique ID
-          title: item.title!,
-          snippet: item.description || item.contentSnippet || '',
-          content: item.content || '', // Full content if available in RSS
-          source: source.name,
-          publicationDatetime: item.pubDate!, // RFC 2822 format, parsable by JS Date
-        }));
-
-      // Store full articles in KV and add to list without content
-      for (const article of sourceArticles) {
-        await kv.put(`article:${article.id}`, JSON.stringify(article));
-        articles.push({ ...article, content: undefined });
-      }
-
-    } catch (error) {
-      console.error(`Failed to fetch ${source.name}:`, error);
-      errorMessage += `Failed to fetch ${source.name}. `;
+// Function to fetch and parse RSS feeds
+async function fetchAndParseRSS(url: string, sourceName: string): Promise<Article[]> {
+  try {
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error(`Failed to fetch ${url}: ${response.status}`);
     }
+    const xmlText = await response.text();
+
+    const parser = new DOMParser();
+    const xmlDoc = parser.parseFromString(xmlText, "text/xml");
+
+    // Check for parsing errors
+    const parserError = xmlDoc.getElementsByTagName("parsererror")[0];
+    if (parserError) {
+      throw new Error(`Failed to parse XML for ${url}: ${parserError.textContent}`);
+    }
+
+    const items = xmlDoc.getElementsByTagName("item");
+    const articles: Article[] = [];
+
+    for (const item of Array.from(items)) {
+      const title = item.getElementsByTagName("title")[0]?.textContent || "";
+      const link = item.getElementsByTagName("link")[0]?.textContent || "";
+      const description = item.getElementsByTagName("description")[0]?.textContent || "";
+      const pubDate = item.getElementsByTagName("pubDate")[0]?.textContent || "";
+      // Handle <content:encoded> if present (namespace-aware)
+      const contentEncoded = item.getElementsByTagName("encoded")[0]?.textContent || "";
+
+      if (link && title && description && pubDate) {
+        articles.push({
+          id: link, // Using link as a unique ID
+          title,
+          snippet: description,
+          content: contentEncoded || description, // Use content:encoded if available
+          source: sourceName,
+          publicationDatetime: pubDate,
+        });
+      }
+    }
+
+    return articles;
+
+  } catch (error) {
+    console.error(`Error processing ${sourceName} (${url}):`, error);
+    return []; // Return empty array on failure to continue processing other sources
   }
-
-  // Sort by publication date, most recent first
-  articles.sort((a, b) => new Date(b.publicationDatetime).getTime() - new Date(a.publicationDatetime).getTime());
-
-  // Store the list without content and metadata
-  await kv.put('articlesList', JSON.stringify({ articles }));
-  await kv.put('lastUpdated', Date.now().toString());
-  await kv.put('error', errorMessage.trim() || '');
 }
 
 // Handler for /articles endpoint
-export const onRequest: Handler = async (context) => {
-  const kv = context.env.ARTICLES_KV as KVNamespace;
+export async function onRequest(context: PagesFunctionContext): Promise<Response> {
+  const { env } = context;
+  const kv = env["cloud-rss-articles"];
 
-  // Check if cache needs updating (older than 15 minutes)
-  const lastUpdated = await kv.get('lastUpdated');
-  const now = Date.now();
-  const fifteenMinutes = 15 * 60 * 1000;
-  if (!lastUpdated || now - parseInt(lastUpdated) > fifteenMinutes) {
-    await updateArticles(kv);
+  const allArticles: Article[] = [];
+  for (const source of sources) {
+    const articles = await fetchAndParseRSS(source.url, source.name);
+    allArticles.push(...articles);
   }
 
-  // Fetch the cached article list
-  const articlesList = await kv.get('articlesList');
-  const error = await kv.get('error');
-
-  // Handle case where no articles are cached yet
-  if (!articlesList) {
-    return new Response(
-      JSON.stringify({ articles: [], error: 'No articles found' }),
-      { headers: { 'Content-Type': 'application/json' } }
-    );
+  // Store full articles in KV
+  for (const article of allArticles) {
+    await kv.put(`article:${article.id}`, JSON.stringify(article));
   }
 
-  // Parse and return the response, including any errors
-  const data = JSON.parse(articlesList);
-  if (error) {
-    data.error = error;
-  }
+  // Store list of articles (without full content) in KV
+  const articleList = allArticles.map(({ content, ...rest }) => rest);
+  await kv.put("articles_list", JSON.stringify(articleList));
 
-  return new Response(
-    JSON.stringify(data),
-    { headers: { 'Content-Type': 'application/json' } }
-  );
-};
+  return new Response(JSON.stringify(articleList), {
+    headers: { "Content-Type": "application/json" },
+  });
+}
