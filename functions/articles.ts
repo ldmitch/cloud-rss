@@ -9,6 +9,12 @@ interface Article {
   publicationDatetime: string;
 }
 
+interface PagesFunctionContext {
+  request: Request;
+  env: Record<string, any>;
+  params?: Record<string, string>;
+}
+
 // Hardcoded RSS sources (could be moved to KV for dynamic updates later)
 const sources = [
   { name: "Hacker News", url: "https://hnrss.org/newest" },

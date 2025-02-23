@@ -1,24 +1,19 @@
-import type { Handler, KVNamespace } from '@cloudflare/workers-types';
+interface PagesFunctionContext {
+  request: Request;
+  env: Record<string, any>;
+  params?: Record<string, string>;
+}
 
 // Handler for /article/[id] endpoint
-export const onRequest: Handler = async (context) => {
-  const { params } = context;
-  const id = params.id as string;
-  const kv = context.env.ARTICLES_KV as KVNamespace;
-
-  // Fetch the article from KV
-  const article = await kv.get(`article:${id}`);
-
-  if (!article) {
-    return new Response(
-      'Article not found',
-      { status: 404, headers: { 'Content-Type': 'text/plain' } }
-    );
+export async function onRequest(context: PagesFunctionContext): Promise<Response> {
+  const { params, env } = context;
+  const kv = env["cloud-rss-articles"];
+  if (!params || !params.id) {
+    return new Response("No ID provided", { status: 400 });
   }
-
-  // Return the article as JSON
-  return new Response(
-    article,
-    { headers: { 'Content-Type': 'application/json' } }
-  );
-};
+  const article = await kv.get(`article:${params.id}`);
+  if (article) {
+    return new Response(article, { headers: { "Content-Type": "application/json" } });
+  }
+  return new Response("Article not found", { status: 404 });
+}
