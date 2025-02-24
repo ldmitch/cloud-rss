@@ -21,13 +21,16 @@ const LandingPage: React.FC = () => {
   const fetchArticles = async () => {
     try {
       setIsLoading(true);
-      const response = await fetch('/articles');
+      const response = await fetch("/articles");
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
+
       const data = await response.json();
-      setArticles(data.articles);
-      
+      console.log("Fetched articles: \n");
+      console.log(data);
+      setArticles(data);
+
       // Show warning if there were partial errors
       if (data.error) {
         toaster.create({
@@ -36,14 +39,16 @@ const LandingPage: React.FC = () => {
           duration: 5000,
         });
       }
+
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to fetch articles';
+      const message = err instanceof Error ? err.message : "Failed to fetch articles";
       setError(message);
       toaster.create({
         title: "Error fetching articles",
         description: message,
         duration: 10000,
       });
+
     } finally {
       setIsLoading(false);
     }
@@ -59,20 +64,21 @@ const LandingPage: React.FC = () => {
     try {
       // First show the dialog with just the snippet
       setSelectedArticle(article);
-      
+
       // Then fetch the full content
       const response = await fetch(`/article/${article.id}`);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       const data = await response.json();
-      
+
       // Update the selected article with full content
-      setSelectedArticle(prev => 
+      setSelectedArticle(prev =>
         prev ? { ...prev, content: data.content } : null
       );
+
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to fetch article content';
+      const message = err instanceof Error ? err.message : "Failed to fetch article content";
       toaster.create({
         title: "Error fetching article content",
         description: message,
@@ -98,23 +104,27 @@ const LandingPage: React.FC = () => {
         </VStack>
       ) : (
         <SimpleGrid columns={[1, 2, 3]} gap={6}>
-          {articles.map(article => (
-            <Box
-              key={article.id}
-              borderWidth="1px"
-              borderRadius="lg"
-              overflow="hidden"
-              p={4}
-              _hover={{ shadow: "md", cursor: "pointer" }}
-              onClick={() => handleArticleClick(article)}
-            >
-              <Heading as="h3" size="md" mb={2}>{article.title}</Heading>
-              <Text>{article.snippet}</Text>
-              <Text fontSize="sm" color="gray.500" mt={2}>
-                {article.source} • {new Date(article.publicationDatetime).toLocaleString()}
-              </Text>
-            </Box>
-          ))}
+          {articles && articles.length > 0 ? (
+            articles.map(article => (
+              <Box
+                key={article.id}
+                borderWidth="1px"
+                borderRadius="lg"
+                overflow="hidden"
+                p={4}
+                _hover={{ shadow: "md", cursor: "pointer" }}
+                onClick={() => handleArticleClick(article)}
+              >
+                <Heading as="h3" size="md" mb={2}>{article.title}</Heading>
+                <Text>{article.snippet}</Text>
+                <Text fontSize="sm" color="gray.500" mt={2}>
+                  {article.source} • {new Date(article.publicationDatetime).toLocaleString()}
+                </Text>
+              </Box>
+            ))
+          ) : (
+            <Text>No articles found.</Text>
+          )}
         </SimpleGrid>
       )}
 
