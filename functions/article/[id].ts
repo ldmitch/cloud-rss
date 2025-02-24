@@ -1,13 +1,14 @@
-interface PagesFunctionContext {
-  request: Request;
-  env: Record<string, any>;
-  params?: Record<string, string>;
+import type { PagesFunction } from "@cloudflare/workers-types";
+
+interface Env {
+  ARTICLES: KVNamespace;
 }
 
 // Handler for /article/[id] endpoint
-export async function onRequest(context: PagesFunctionContext): Promise<Response> {
-  const { params, env } = context;
-  const kv = env["cloud-rss-articles"];
+export const onRequest: PagesFunction<Env> = async (context) => {
+  const params = context.params;
+  const kv = context.env.ARTICLES;
+  
   if (!params || !params.id) {
     return new Response("No ID provided", { status: 400 });
   }

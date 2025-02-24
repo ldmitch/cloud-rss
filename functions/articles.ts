@@ -1,3 +1,4 @@
+import type { PagesFunction } from "@cloudflare/workers-types";
 import { DOMParser } from "@xmldom/xmldom";
 
 interface Article {
@@ -9,10 +10,8 @@ interface Article {
   publicationDatetime: string;
 }
 
-interface PagesFunctionContext {
-  request: Request;
-  env: Record<string, any>;
-  params?: Record<string, string>;
+interface Env {
+  ARTICLES: KVNamespace;
 }
 
 // Hardcoded RSS sources (could be moved to KV for dynamic updates later)
@@ -71,9 +70,8 @@ async function fetchAndParseRSS(url: string, sourceName: string): Promise<Articl
 }
 
 // Handler for /articles endpoint
-export async function onRequest(context: PagesFunctionContext): Promise<Response> {
-  const { env } = context;
-  const kv = env["cloud-rss-articles"];
+export const onRequest: PagesFunction<Env> = async (context) => {
+  const kv = context.env.ARTICLES;
 
   const allArticles: Article[] = [];
   for (const source of sources) {
