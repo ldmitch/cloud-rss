@@ -1,9 +1,8 @@
 name = "cloud-rss"
-compatibility_date = "2025-02-20"
 
 [site]
 bucket = "./dist"
 
 [[kv_namespaces]]
-binding = "cloud-rss-articles"
-id = "ae216705a83b45ca900662f79423867c"
+binding = "ARTICLES"
+id = "f960d237581b41d2980372ab30b3e92e"
