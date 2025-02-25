@@ -10,7 +10,8 @@
     "allowJs": true,
     "isolatedModules": true,
     "esModuleInterop": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "resolveJsonModule": true
   },
   "include": ["functions/**/*"],
   "exclude": ["node_modules"]

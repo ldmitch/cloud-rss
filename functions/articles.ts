@@ -1,5 +1,6 @@
 import type { PagesFunction } from "@cloudflare/workers-types";
 import { DOMParser } from "@xmldom/xmldom";
+import sourcesData from "./test-sources.json";
 
 interface Article {
   id: string;
@@ -10,15 +11,19 @@ interface Article {
   publicationDatetime: string;
 }
 
+interface Source {
+  title: string;
+  url: string;
+}
+
 interface Env {
   ARTICLES: KVNamespace;
 }
 
-// Hardcoded RSS sources (could be moved to KV for dynamic updates later)
-const sources = [
-  { name: "Hacker News", url: "https://hnrss.org/newest" },
-  { name: "TypeScript Blog", url: "https://devblogs.microsoft.com/typescript/feed/" },
-];
+const sources = sourcesData.sources.map((source: Source) => ({
+  name: source.title,
+  url: source.url
+}));
 
 // Function to fetch and parse RSS feeds
 async function fetchAndParseRSS(url: string, sourceName: string): Promise<Article[]> {
