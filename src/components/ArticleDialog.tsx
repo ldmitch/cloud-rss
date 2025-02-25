@@ -1,5 +1,5 @@
 import React from 'react';
-import { VStack, Text, Heading } from '@chakra-ui/react';
+import { VStack, Text, Heading, Link, Box } from '@chakra-ui/react';
 import { DialogRoot, DialogContent, DialogHeader, DialogBody, DialogCloseTrigger, DialogBackdrop } from './ui/dialog';
 
 interface ArticleDialogProps {
@@ -9,6 +9,7 @@ interface ArticleDialogProps {
     id: string;
     title: string;
     snippet: string;
+    url: string;
     content?: string;
     source: string;
     publicationDatetime: string;
@@ -23,7 +24,6 @@ export const ArticleDialog: React.FC<ArticleDialogProps> = ({ isOpen, onClose, a
   return (
     <DialogRoot open={isOpen} onOpenChange={handleOpenChange}>
       <DialogBackdrop className="backdrop-blur-sm bg-black/30" />
-
       <DialogContent
         style={{
           width: '80vw',
@@ -42,15 +42,24 @@ export const ArticleDialog: React.FC<ArticleDialogProps> = ({ isOpen, onClose, a
           </Heading>
           <DialogCloseTrigger />
         </DialogHeader>
-
         <DialogBody className="overflow-y-auto h-[calc(80vh-4rem)]">
           <VStack gap={4} alignItems="stretch" pb={6}>
             <Text fontSize="lg" color="gray.500">
-              {article.source} • {article.publicationDatetime}
+              {article.source} • {new Date(article.publicationDatetime).toLocaleString()}
             </Text>
-            <Text fontSize="base">
-              {article.content || article.snippet}
-            </Text>
+            <Link href={article.url} color="blue.500">
+              View original article
+            </Link>
+            {article.content ? (
+              <Box 
+                dangerouslySetInnerHTML={{ __html: article.content }} 
+                overflow="auto"
+              />
+            ) : (
+              <Text>
+                {article.snippet}
+              </Text>
+            )}
           </VStack>
         </DialogBody>
       </DialogContent>
