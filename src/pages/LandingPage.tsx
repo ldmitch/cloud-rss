@@ -7,6 +7,7 @@ interface Article {
   id: string;
   title: string;
   snippet: string;
+  url: string;
   content?: string;
   source: string;
   publicationDatetime: string;
@@ -67,10 +68,16 @@ const LandingPage: React.FC = () => {
 
       // Then fetch the full content
       const response = await fetch(`/article/${article.id}`);
+      console.log(`Article fetch response for ${article.id}: ${response.status}`);
+      
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
+      console.log('Content-Type:', response.headers.get('Content-Type'));
+      
+      // Try to parse the response as JSON
       const data = await response.json();
+      console.log('Article data:', data);
 
       // Update the selected article with full content
       setSelectedArticle(prev =>
@@ -78,6 +85,7 @@ const LandingPage: React.FC = () => {
       );
 
     } catch (err) {
+      console.error('Error fetching article:', err);
       const message = err instanceof Error ? err.message : "Failed to fetch article content";
       toaster.create({
         title: "Error fetching article content",
