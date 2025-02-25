@@ -7,6 +7,7 @@ interface Article {
   title: string;
   snippet: string;
   content?: string;
+  url: string;
   source: string;
   publicationDatetime: string;
 }
@@ -24,6 +25,19 @@ const sources = sourcesData.sources.map((source: Source) => ({
   name: source.title,
   url: source.url
 }));
+
+// Simple hash function to convert URLs to alphanumeric IDs
+function hashUrl(url: string): string {
+  let hash = 0;
+  for (let i = 0; i < url.length; i++) {
+    const char = url.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash; // Convert to 32bit integer
+  }
+  
+  // Convert to a base36 string (alphanumeric) and ensure it's positive
+  return Math.abs(hash).toString(36);
+}
 
 // Function to fetch and parse RSS feeds
 async function fetchAndParseRSS(url: string, sourceName: string): Promise<Article[]> {
@@ -56,10 +70,11 @@ async function fetchAndParseRSS(url: string, sourceName: string): Promise<Articl
 
       if (link && title && description && pubDate) {
         articles.push({
-          id: link, // Using link as a unique ID
+          id: hashUrl(link),
+          url: link,
           title,
           snippet: description,
-          content: contentEncoded || description, // Use content:encoded if available
+          content: contentEncoded || description,
           source: sourceName,
           publicationDatetime: pubDate,
         });
@@ -84,12 +99,13 @@ export const onRequest: PagesFunction<Env> = async (context) => {
     allArticles.push(...articles);
   }
 
-  // Store full articles in KV
+  // Store articles in KV without the content field
   for (const article of allArticles) {
-    await kv.put(`article:${article.id}`, JSON.stringify(article));
+    const { content, ...articleWithoutContent } = article;
+    await kv.put(`article:${article.id}`, JSON.stringify(articleWithoutContent));
   }
 
-  // Store list of articles (without full content) in KV
+  // Store list of articles in KV
   const articleList = allArticles.map(({ content, ...rest }) => rest);
   await kv.put("articles_list", JSON.stringify(articleList));
 
