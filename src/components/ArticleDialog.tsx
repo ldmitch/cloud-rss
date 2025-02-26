@@ -21,6 +21,17 @@ export const ArticleDialog: React.FC<ArticleDialogProps> = ({ isOpen, onClose, a
     if (!open) onClose();
   };
 
+  // Process the article content to preserve newlines
+  const processContent = (content: string) => {
+    // Split by newlines and wrap each paragraph in paragraph tags if not already wrapped in HTML tags
+    return content
+      .split('\n\n') // Split by double newlines (paragraphs)
+      .map(paragraph => 
+        paragraph.trim().startsWith('<') ? paragraph : `<p>${paragraph}</p>`
+      )
+      .join('\n');
+  };
+
   return (
     <DialogRoot open={isOpen} onOpenChange={handleOpenChange}>
       <DialogBackdrop className="backdrop-blur-sm bg-black/30" />
@@ -62,6 +73,8 @@ export const ArticleDialog: React.FC<ArticleDialogProps> = ({ isOpen, onClose, a
             <Link 
               href={article.url} 
               color="blue.500" 
+              fontSize="lg"
+              fontWeight="medium"
               target="_blank" 
               rel="noopener noreferrer"
             >
@@ -69,15 +82,33 @@ export const ArticleDialog: React.FC<ArticleDialogProps> = ({ isOpen, onClose, a
             </Link>
             {article.content ? (
               <Box 
-                dangerouslySetInnerHTML={{ __html: article.content }} 
+                dangerouslySetInnerHTML={{ 
+                  __html: article.content.includes('<') ? 
+                    article.content : 
+                    processContent(article.content) 
+                }} 
                 width="100%"
                 className="article-content"
-                style={{
-                  overflow: 'hidden'
+                css={{
+                  overflow: 'hidden',
+                  '& p': {
+                    marginBottom: '1em',
+                    whiteSpace: 'pre-wrap'
+                  },
+                  '& > p:last-child': {
+                    marginBottom: 0
+                  },
+                  '& a': {
+                    color: '#3182CE', // This is Chakra UI's blue.500 color
+                    textDecoration: 'none',
+                  },
+                  '& a:hover': {
+                    textDecoration: 'underline',
+                  }
                 }}
               />
             ) : (
-              <Text>
+              <Text whiteSpace="pre-wrap">
                 {article.snippet}
               </Text>
             )}

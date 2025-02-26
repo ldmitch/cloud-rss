@@ -78,6 +78,7 @@ const LandingPage: React.FC = () => {
       // Try to parse the response as JSON
       const data = await response.json();
       console.log('Article data:', data);
+      console.log('Article content:', data.content);
 
       // Update the selected article with full content
       setSelectedArticle(prev =>
