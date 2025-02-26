@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Box, Heading, Text, SimpleGrid, Button, VStack, Spinner } from "@chakra-ui/react";
+import { Box, Heading, Text, SimpleGrid, Button, VStack, Spinner, Container } from "@chakra-ui/react";
 import { ArticleDialog } from "../components/ArticleDialog";
 import { toaster } from "../components/ui/toaster";
 
@@ -111,29 +111,31 @@ const LandingPage: React.FC = () => {
           <Button onClick={fetchArticles}>Retry</Button>
         </VStack>
       ) : (
-        <SimpleGrid columns={[1, 2, 3]} gap={6}>
-          {articles && articles.length > 0 ? (
-            articles.map(article => (
-              <Box
-                key={article.id}
-                borderWidth="1px"
-                borderRadius="lg"
-                overflow="hidden"
-                p={4}
-                _hover={{ shadow: "md", cursor: "pointer" }}
-                onClick={() => handleArticleClick(article)}
-              >
-                <Heading as="h3" size="md" mb={2}>{article.title}</Heading>
-                <Text>{article.snippet}</Text>
-                <Text fontSize="sm" color="gray.500" mt={2}>
-                  {article.source} • {new Date(article.publicationDatetime).toLocaleString()}
-                </Text>
-              </Box>
-            ))
-          ) : (
-            <Text>No articles found.</Text>
-          )}
-        </SimpleGrid>
+        <Container maxW="1200px" px={0}>
+          <SimpleGrid columns={[1, 2, 3]} gap={6}>
+            {articles && articles.length > 0 ? (
+              articles.map(article => (
+                <Box
+                  key={article.id}
+                  borderWidth="1px"
+                  borderRadius="lg"
+                  overflow="hidden"
+                  p={4}
+                  _hover={{ shadow: "md", cursor: "pointer" }}
+                  onClick={() => handleArticleClick(article)}
+                >
+                  <Heading as="h3" size="md" mb={2}>{article.title}</Heading>
+                  <Text>{article.snippet}</Text>
+                  <Text fontSize="sm" color="gray.500" mt={2}>
+                    {article.source} • {new Date(article.publicationDatetime).toLocaleString()}
+                  </Text>
+                </Box>
+              ))
+            ) : (
+              <Text>No articles found.</Text>
+            )}
+          </SimpleGrid>
+        </Container>
       )}
 
       {selectedArticle && (
