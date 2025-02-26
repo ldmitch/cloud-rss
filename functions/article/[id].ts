@@ -15,8 +15,63 @@ interface Env {
   ARTICLES: KVNamespace;
 }
 
+// Extract the base URL from a full URL
+function getBaseUrl(url: string): string {
+  try {
+    const parsedUrl = new URL(url);
+    return `${parsedUrl.protocol}//${parsedUrl.host}`;
+  } catch (error) {
+    console.error('Error parsing URL:', error);
+    return '';
+  }
+}
+
+// Resolve relative URLs to absolute ones
+function resolveRelativeUrls(html: string, baseUrl: string): string {
+  if (!baseUrl) return html;
+  
+  try {
+    const { document } = parseHTML(`<div>${html}</div>`);
+    
+    // Process all anchor tags
+    const links = document.querySelectorAll('a');
+    links.forEach((link: Element) => {
+      const href = link.getAttribute('href');
+      if (!href) return;
+      
+      // Only process relative URLs
+      if (href.startsWith('/') && !href.startsWith('//')) {
+        link.setAttribute('href', `${baseUrl}${href}`);
+      } else if (!href.includes('://') && !href.startsWith('#') && !href.startsWith('mailto:')) {
+        // Handle links without leading slash
+        link.setAttribute('href', `${baseUrl}/${href}`);
+      }
+    });
+    
+    // Process all images too
+    const images = document.querySelectorAll('img');
+    images.forEach((img: Element) => {
+      const src = img.getAttribute('src');
+      if (!src) return;
+      
+      if (src.startsWith('/') && !src.startsWith('//')) {
+        img.setAttribute('src', `${baseUrl}${src}`);
+      } else if (!src.includes('://')) {
+        // Handle images without leading slash
+        img.setAttribute('src', `${baseUrl}/${src}`);
+      }
+    });
+    
+    // Return the inner HTML of the wrapper div, not the whole body
+    return document.querySelector('div').innerHTML;
+  } catch (error) {
+    console.error('Error resolving relative URLs:', error);
+    return html; // Return the original HTML if there's an error
+  }
+}
+
 // Extract clean text from HTML content
-function extractArticleContent(html: string): string {
+function extractArticleContent(html: string, baseUrl: string): string {
   try {
     const { document } = parseHTML(html);
     
@@ -48,25 +103,8 @@ function extractArticleContent(html: string): string {
     ].filter(Boolean);
     
     let contentElement = possibleContentElements[0] || document.body;
-    let cleanContent = '';
-    
-    // Process paragraphs and headers for a cleaner output
-    const paragraphs = contentElement.querySelectorAll('p, h1, h2, h3, h4, h5, h6');
-    
-    for (let i = 0; i < paragraphs.length; i++) {
-      const p = paragraphs[i];
-      const text = p.textContent?.trim() || '';
-      if (text.length > 20) { // Skip very short paragraphs which are likely not content
-        cleanContent += text + '\n\n';
-      }
-    }
-    
-    if (!cleanContent.trim()) {
-      // Fall back to body content if no paragraphs were found
-      cleanContent = contentElement.textContent?.trim() || '';
-    }
-    
-    return cleanContent.trim();
+    const contentHtml = contentElement.innerHTML;
+    return resolveRelativeUrls(contentHtml, baseUrl);
   } catch (error) {
     console.error('Error extracting article content:', error);
     return 'Failed to extract article content.';
@@ -82,7 +120,8 @@ async function fetchArticleContent(url: string): Promise<string | null> {
     }
     
     const htmlContent = await response.text();
-    return extractArticleContent(htmlContent);
+    const baseUrl = getBaseUrl(url);
+    return extractArticleContent(htmlContent, baseUrl);
   } catch (error) {
     console.error(`Error fetching article content from ${url}:`, error);
     return null;
