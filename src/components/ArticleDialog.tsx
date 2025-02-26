@@ -28,32 +28,53 @@ export const ArticleDialog: React.FC<ArticleDialogProps> = ({ isOpen, onClose, a
         style={{
           width: '80vw',
           height: '80vh',
-          maxWidth: 'none',
+          maxWidth: '1000px',
+          maxHeight: '80vh',
           position: 'fixed',
           left: '50%',
           top: '40%',
           transform: 'translate(-50%, -50%)',
+          display: 'flex',
+          flexDirection: 'column',
         }}
         className="rounded-lg overflow-hidden"
       >
-        <DialogHeader className="font-semibold">
+        <DialogHeader className="font-semibold" style={{ flex: '0 0 auto' }}>
           <Heading as="h2" fontSize="4xl">
             {article.title}
           </Heading>
           <DialogCloseTrigger />
         </DialogHeader>
-        <DialogBody className="overflow-y-auto h-[calc(80vh-4rem)]">
-          <VStack gap={4} alignItems="stretch" pb={6}>
+        <DialogBody 
+          className="overflow-y-auto" 
+          style={{ 
+            flex: '1 1 auto',
+            overflowY: 'auto',
+            overflowX: 'hidden',
+            padding: '16px',
+            maxHeight: 'calc(80vh - 100px)', /* Subtracting header height */
+          }}
+        >
+          <VStack gap={4} alignItems="stretch" pb={6} width="100%">
             <Text fontSize="lg" color="gray.500">
               {article.source} • {new Date(article.publicationDatetime).toLocaleString()}
             </Text>
-            <Link href={article.url} color="blue.500">
+            <Link 
+              href={article.url} 
+              color="blue.500" 
+              target="_blank" 
+              rel="noopener noreferrer"
+            >
               View original article
             </Link>
             {article.content ? (
               <Box 
                 dangerouslySetInnerHTML={{ __html: article.content }} 
-                overflow="auto"
+                width="100%"
+                className="article-content"
+                style={{
+                  overflow: 'hidden'
+                }}
               />
             ) : (
               <Text>
