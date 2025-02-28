@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Box, Heading, Text, SimpleGrid, Button, VStack, Spinner, Container } from "@chakra-ui/react";
 import { ArticleDialog } from "../components/ArticleDialog";
 import { toaster } from "../components/ui/toaster";
+import { parseHTML } from "linkedom";
 
 interface Article {
   id: string;
@@ -12,6 +13,53 @@ interface Article {
   source: string;
   publicationDatetime: string;
 }
+
+// Strip HTML tags and truncate text for previews
+const formatSnippet = (htmlContent: string, maxLength: number = 150): string => {
+  try {
+    // Use linkedom to parse HTML and extract text content
+    const { document } = parseHTML(`<div>${htmlContent}</div>`);
+
+    const elementsToRemove = [
+      'script', 'style', 'nav', 'header', 'footer',
+      'aside', 'iframe', 'noscript', 'svg', 'form',
+      'button'
+    ];
+    elementsToRemove.forEach(selector => {
+      const elements = document.querySelectorAll(selector);
+      for (let i = 0; i < elements.length; i++) {
+        elements[i].remove();
+      }
+    });
+
+    // Get the text content from the document
+    const divElement = document.querySelector('div');
+    let text = divElement ? divElement.textContent || '' : '';
+
+    // Clean up the text (remove extra spaces, line breaks, etc.)
+    text = text.replace(/\s+/g, ' ').trim();
+
+    // Truncate if longer than maxLength
+    if (text.length > maxLength) {
+      return `${text.substring(0, maxLength)}...`;
+    }
+
+    return text;
+
+  } catch (error) {
+    console.error('Error formatting snippet:', error);
+
+    // Fallback to simple regex-based HTML stripping
+    const strippedHtml = htmlContent.replace(/<[^>]*>?/gm, '');
+    const cleanText = strippedHtml.replace(/\s+/g, ' ').trim();
+
+    if (cleanText.length > maxLength) {
+      return `${cleanText.substring(0, maxLength)}...`;
+    }
+
+    return cleanText;
+  }
+};
 
 const LandingPage: React.FC = () => {
   const [articles, setArticles] = useState<Article[]>([]);
@@ -69,12 +117,12 @@ const LandingPage: React.FC = () => {
       // Then fetch the full content
       const response = await fetch(`/article/${article.id}`);
       console.log(`Article fetch response for ${article.id}: ${response.status}`);
-      
+
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       console.log('Content-Type:', response.headers.get('Content-Type'));
-      
+
       // Try to parse the response as JSON
       const data = await response.json();
       console.log('Article data:', data);
@@ -126,7 +174,7 @@ const LandingPage: React.FC = () => {
                   onClick={() => handleArticleClick(article)}
                 >
                   <Heading as="h3" size="md" mb={2}>{article.title}</Heading>
-                  <Text>{article.snippet}</Text>
+                  <Text>{formatSnippet(article.snippet)}</Text>
                   <Text fontSize="sm" color="gray.500" mt={2}>
                     {article.source} • {new Date(article.publicationDatetime).toLocaleString()}
                   </Text>
