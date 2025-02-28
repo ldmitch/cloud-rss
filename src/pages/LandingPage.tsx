@@ -105,8 +105,6 @@ const LandingPage: React.FC = () => {
 
   useEffect(() => {
     fetchArticles();
-    const interval = setInterval(fetchArticles, 15 * 60 * 1000);
-    return () => clearInterval(interval);
   }, []);
 
   const handleArticleClick = async (article: Article) => {
