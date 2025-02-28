@@ -1,5 +1,5 @@
-import React from 'react';
-import { VStack, Text, Heading, Link, Box } from '@chakra-ui/react';
+import React, { useState, useEffect } from 'react';
+import { VStack, Text, Heading, Link, Box, Spinner, Center } from '@chakra-ui/react';
 import { DialogRoot, DialogContent, DialogHeader, DialogBody, DialogCloseTrigger, DialogBackdrop } from './ui/dialog';
 
 interface ArticleDialogProps {
@@ -17,6 +17,13 @@ interface ArticleDialogProps {
 }
 
 export const ArticleDialog: React.FC<ArticleDialogProps> = ({ isOpen, onClose, article }) => {
+  const [isLoading, setIsLoading] = useState(article.content === undefined);
+  
+  // Update loading state when article content changes
+  useEffect(() => {
+    setIsLoading(article.content === undefined);
+  }, [article.content]);
+
   const handleOpenChange = ({ open }: { open: boolean }) => {
     if (!open) onClose();
   };
@@ -80,7 +87,15 @@ export const ArticleDialog: React.FC<ArticleDialogProps> = ({ isOpen, onClose, a
             >
               View original article
             </Link>
-            {article.content ? (
+            
+            {isLoading ? (
+              <Center py={8}>
+                <VStack gap={4}>
+                  <Spinner size="xl" color="blue.500" />
+                  <Text>Loading article content...</Text>
+                </VStack>
+              </Center>
+            ) : article.content ? (
               <Box 
                 dangerouslySetInnerHTML={{ 
                   __html: article.content.includes('<') ? 

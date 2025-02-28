@@ -111,7 +111,6 @@ const LandingPage: React.FC = () => {
 
   const handleArticleClick = async (article: Article) => {
     try {
-      // First show the dialog with just the snippet
       setSelectedArticle(article);
 
       // Then fetch the full content
