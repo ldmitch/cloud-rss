@@ -115,17 +115,11 @@ const LandingPage: React.FC = () => {
 
       // Then fetch the full content
       const response = await fetch(`/article/${article.id}`);
-      console.log(`Article fetch response for ${article.id}: ${response.status}`);
-
       if (!response.ok) {
+        console.log('Content-Type:', response.headers.get('Content-Type'));
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-      console.log('Content-Type:', response.headers.get('Content-Type'));
-
-      // Try to parse the response as JSON
       const data = await response.json();
-      console.log('Article data:', data);
-      console.log('Article content:', data.content);
 
       // Update the selected article with full content
       setSelectedArticle(prev =>
