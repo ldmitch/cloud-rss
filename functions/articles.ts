@@ -21,8 +21,6 @@ export const onRequest: PagesFunction<Env> = async (context) => {
       });
     }
 
-    // Parse the articles JSON and return
-    const articles = JSON.parse(articlesJson);
     return new Response(articlesJson, {
       headers: { "Content-Type": "application/json" },
     });
