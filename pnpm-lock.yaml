@@ -14,9 +14,6 @@ importers:
       '@emotion/react':
         specifier: ^11.14.0
         version: 11.14.0(@types/react@19.0.10)(react@19.0.0)
-      '@xmldom/xmldom':
-        specifier: ^0.9.7
-        version: 0.9.7
       linkedom:
         specifier: ^0.18.9
         version: 0.18.9
@@ -967,10 +964,6 @@ packages:
     resolution: {integrity: sha512-T4sHPvS+DIqDP51ifPqa9XIRAz/kIvIi8oXcnOZZgHmMotgmmdxe/DD5tMFlt5nuIRzT0/QuiwmKlH0503Aapw==}
     peerDependencies:
       vite: ^4 || ^5 || ^6
-
-  '@xmldom/xmldom@0.9.7':
-    resolution: {integrity: sha512-syvR8iIJjpTZ/stv7l89UAViwGFh6lbheeOaqSxkYx9YNmIVvPTRH+CT/fpykFtUx5N+8eSMDRvggF9J8GEPzQ==}
-    engines: {node: '>=14.6'}
 
   '@zag-js/accordion@0.82.1':
     resolution: {integrity: sha512-DWaElpm6RhntW8zVPMfd+s461FuXi6rv4pDPpXb4xCAJ0KTkBzS6PFxoBLL+11Mjv9XioaBoJatIGOCF8GAtTA==}
@@ -2761,8 +2754,6 @@ snapshots:
       vite: 6.1.1
     transitivePeerDependencies:
       - '@swc/helpers'
-
-  '@xmldom/xmldom@0.9.7': {}
 
   '@zag-js/accordion@0.82.1':
     dependencies:
