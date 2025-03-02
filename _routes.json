@@ -20,5 +20,13 @@
       "pattern": "/*",
       "serve": "index.html"
     }
-  ]
+  ],
+  "scheduled": {
+    "refresh-articles": {
+      "cron": "*/30 * * * *",
+      "retry": {
+        "limit": 3
+      }
+    }
+  }
 }
