@@ -29,16 +29,16 @@ function getBaseUrl(url: string): string {
 // Resolve relative URLs to absolute ones
 function resolveRelativeUrls(html: string, baseUrl: string): string {
   if (!baseUrl) return html;
-  
+
   try {
     const { document } = parseHTML(`<div>${html}</div>`);
-    
+
     // Process all anchor tags
     const links = document.querySelectorAll('a');
     links.forEach((link: Element) => {
       const href = link.getAttribute('href');
       if (!href) return;
-      
+
       // Only process relative URLs
       if (href.startsWith('/') && !href.startsWith('//')) {
         link.setAttribute('href', `${baseUrl}${href}`);
@@ -47,13 +47,13 @@ function resolveRelativeUrls(html: string, baseUrl: string): string {
         link.setAttribute('href', `${baseUrl}/${href}`);
       }
     });
-    
+
     // Process all images too
     const images = document.querySelectorAll('img');
     images.forEach((img: Element) => {
       const src = img.getAttribute('src');
       if (!src) return;
-      
+
       if (src.startsWith('/') && !src.startsWith('//')) {
         img.setAttribute('src', `${baseUrl}${src}`);
       } else if (!src.includes('://')) {
@@ -61,7 +61,7 @@ function resolveRelativeUrls(html: string, baseUrl: string): string {
         img.setAttribute('src', `${baseUrl}/${src}`);
       }
     });
-    
+
     // Return the inner HTML of the wrapper div, not the whole body
     return document.querySelector('div').innerHTML;
   } catch (error) {
@@ -74,15 +74,15 @@ function resolveRelativeUrls(html: string, baseUrl: string): string {
 function extractArticleContent(html: string, baseUrl: string): string {
   try {
     const { document } = parseHTML(html);
-    
+
     // Remove unwanted elements that typically don't contain article content
     const elementsToRemove = [
-      'script', 'style', 'nav', 'header', 'footer', 
+      'script', 'style', 'nav', 'header', 'footer',
       'aside', 'iframe', 'noscript', 'svg', 'form',
       'button', '.ad', '.advertisement', '.social-share',
       '.related-articles', '.sidebar', '.comments'
     ];
-    
+
     elementsToRemove.forEach(selector => {
       const elements = document.querySelectorAll(selector);
       for (let i = 0; i < elements.length; i++) {
@@ -90,7 +90,7 @@ function extractArticleContent(html: string, baseUrl: string): string {
         el.remove();
       }
     });
-    
+
     // Look for typical article content containers
     const possibleContentElements = [
       document.querySelector("article"),
@@ -101,7 +101,7 @@ function extractArticleContent(html: string, baseUrl: string): string {
       document.querySelector("#content"),
       document.querySelector(".content")
     ].filter(Boolean);
-    
+
     let contentElement = possibleContentElements[0] || document.body;
     const contentHtml = contentElement.innerHTML;
     return resolveRelativeUrls(contentHtml, baseUrl);
@@ -118,7 +118,7 @@ async function fetchArticleContent(url: string): Promise<string | null> {
     if (!response.ok) {
       throw new Error(`Failed to fetch article content: ${response.status}`);
     }
-    
+
     const htmlContent = await response.text();
     const baseUrl = getBaseUrl(url);
     return extractArticleContent(htmlContent, baseUrl);
@@ -132,32 +132,49 @@ async function fetchArticleContent(url: string): Promise<string | null> {
 export const onRequest: PagesFunction<Env> = async (context) => {
   const params = context.params;
   const kv = context.env.ARTICLES;
-  
+
   if (!params || !params.id) {
     return new Response("No ID provided", { status: 400 });
   }
-  
-  // Get article metadata from KV
-  const articleJson = await kv.get(`article:${params.id}`);
-  if (!articleJson) {
-    return new Response("Article not found", { status: 404 });
-  }
-  
-  const article: Article = JSON.parse(articleJson);
-  const content = await fetchArticleContent(article.url);
-  
-  if (content) {
-    article.content = content;
-  } else {
-    article.content = article.snippet;
-  }
-  
-  return new Response(JSON.stringify(article), { 
-    headers: { 
-      "Content-Type": "application/json",
-      "Access-Control-Allow-Origin": "*",
-      "Access-Control-Allow-Methods": "GET, OPTIONS",
-      "Access-Control-Allow-Headers": "Content-Type"
+
+  try {
+    // Get all articles from KV
+    const articlesJson = await kv.get("all_articles");
+
+    if (!articlesJson) {
+      return new Response("Articles not found", { status: 404 });
     }
-  });
+
+    // Find the specific article by ID
+    const allArticles: Article[] = JSON.parse(articlesJson);
+    const article = allArticles.find(a => a.id === params.id);
+
+    if (!article) {
+      return new Response("Article not found", { status: 404 });
+    }
+
+    // Fetch the full content
+    const content = await fetchArticleContent(article.url);
+    if (content) {
+      article.content = content;
+    } else {
+      article.content = article.snippet;
+    }
+
+    return new Response(JSON.stringify(article), {
+      headers: {
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "GET, OPTIONS",
+        "Access-Control-Allow-Headers": "Content-Type"
+      }
+    });
+
+  } catch (error) {
+    console.error("Error retrieving article:", error);
+    return new Response(JSON.stringify({ error: "Failed to retrieve article" }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
 }
