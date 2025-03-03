@@ -8,7 +8,7 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "wrangler": "tsc -b && vite build && wrangler pages dev ./dist"
+    "wrangler": "tsc -b && vite build && wrangler pages dev ./dist --persist-to=../cloud-rss-worker/.wrangler/state"
   },
   "dependencies": {
     "@chakra-ui/react": "^3.8.0",
