@@ -98,7 +98,7 @@ export const ArticleDialog: React.FC<ArticleDialogProps> = ({ isOpen, onClose, a
         >
           <VStack gap={4} alignItems="stretch" pb={6} width="100%">
             <Text fontSize="lg" color="gray.500">
-              {article.source} • {new Date(article.publicationDatetime).toLocaleString()}
+              {article.source} • {new Date(article.publicationDatetime).toLocaleString(undefined, { timeZoneName: 'short' })}
             </Text>
             <Link
               href={article.url}
