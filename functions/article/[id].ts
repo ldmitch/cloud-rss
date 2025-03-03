@@ -91,6 +91,26 @@ function extractArticleContent(html: string, baseUrl: string): string {
       }
     });
 
+    // Fix problematic images
+    const images = document.querySelectorAll('img');
+    images.forEach((img: Element) => {
+      if (img.hasAttribute('data-nimg')) {
+        img.removeAttribute('data-nimg');
+      }
+      if (img.hasAttribute('style')) {
+        const style = img.getAttribute('style') || '';
+        if (style.includes('position:absolute') || style.includes('position: absolute')) {
+          img.removeAttribute('style');
+        }
+      }
+      if (img.hasAttribute('srcset')) {
+        img.removeAttribute('srcset');
+      }
+
+      // Make sure images have reasonable max dimensions
+      img.setAttribute('style', 'max-width: 100%; height: auto; position: static;');
+    });
+
     // Look for typical article content containers
     const possibleContentElements = [
       document.querySelector("article"),
