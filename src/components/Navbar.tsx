@@ -81,12 +81,13 @@ const Navbar = () => {
       bg="white"
       boxShadow="md"
       borderRadius="md"
-      px={2}
+      px={4}
       py={3}
       zIndex={1000}
+      width={"500px"}
     >
-      <Flex align="center" justify="space-between">
-        <Text fontSize="lg" fontWeight="semibold" width="400px" textAlign="left" color="black">
+      <Flex align="center" justify="center" gap={3}>
+        <Text fontSize="lg" fontWeight="semibold" textAlign="left" color="black">
           {`${currentTime.toLocaleDateString("en-GB")} ${currentTime.toLocaleTimeString("en-GB", { hour12: false })}`}
         </Text>
 
