@@ -89,7 +89,8 @@ const Navbar = () => {
       <Flex align="center">
         <Box width="250px" flexShrink={0}>
           <Text fontSize="lg" fontWeight="semibold" color="black">
-            {`${currentTime.toLocaleDateString("en-GB")} ${currentTime.toLocaleTimeString("en-GB", { hour12: false })}`}
+            {`${currentTime.toLocaleDateString("en-GB")} 
+            ${currentTime.toLocaleTimeString("en-GB", { hour12: false })}`}
           </Text>
         </Box>
 
@@ -102,9 +103,17 @@ const Navbar = () => {
           ) : error ? (
             <Text fontSize="lg" color="red.500">{error}</Text>
           ) : (
-            <Text fontSize="lg" color="blue.600" fontWeight="medium">
-              {formatNextRefresh()}
-            </Text>
+            <Box width="100%" textAlign="center">
+              <Text
+                fontSize="lg"
+                color="blue.600"
+                fontWeight="medium"
+                display="inline-block"
+                minWidth="200px"
+              >
+                {formatNextRefresh()}
+              </Text>
+            </Box>
           )}
         </Box>
       </Flex>
