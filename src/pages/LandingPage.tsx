@@ -76,8 +76,7 @@ const LandingPage: React.FC = () => {
       }
 
       const data = await response.json();
-      console.log("Fetched articles: \n");
-      console.log(data);
+      console.log("Fetched articles: \n", data);
       setArticles(data);
 
       // Show warning if there were partial errors

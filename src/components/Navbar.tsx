@@ -22,6 +22,7 @@ const Navbar = () => {
       }
 
       const data = await response.json();
+      console.log('Refresh status:', data);
       setRefreshStatus(data);
       setError(null);
 
