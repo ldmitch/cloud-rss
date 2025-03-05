@@ -15,6 +15,10 @@
       "script": "functions/articles.ts"
     },
     {
+      "pattern": "/refresh_status",
+      "script": "functions/refresh_status.ts"
+    },
+    {
       "pattern": "/article/:id",
       "script": "functions/article/[id].ts"
     },
