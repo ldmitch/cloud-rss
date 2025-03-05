@@ -84,23 +84,25 @@ const Navbar = () => {
       px={4}
       py={3}
       zIndex={1000}
-      width={"500px"}
+      minWidth="540px"
     >
-      <Flex align="center" justify="center" gap={3}>
-        <Text fontSize="lg" fontWeight="semibold" textAlign="left" color="black">
-          {`${currentTime.toLocaleDateString("en-GB")} ${currentTime.toLocaleTimeString("en-GB", { hour12: false })}`}
-        </Text>
+      <Flex align="center" justify="space-between">
+        <Box width="290px">
+          <Text fontSize="lg" fontWeight="semibold" color="black">
+            {`${currentTime.toLocaleDateString("en-GB")} ${currentTime.toLocaleTimeString("en-GB", { hour12: false })}`}
+          </Text>
+        </Box>
 
-        <Box>
+        <Box width="250px" textAlign="right">
           {loading ? (
-            <Flex align="center">
+            <Flex align="center" justify="flex-end">
               <Spinner size="sm" mr={2} />
-              <Text fontSize="sm" color="gray.600">Loading...</Text>
+              <Text fontSize="lg" color="gray.600" fontWeight="semibold">Loading...</Text>
             </Flex>
           ) : error ? (
-            <Text fontSize="sm" color="red.500">{error}</Text>
+            <Text fontSize="lg" color="red.500" fontWeight="semibold">{error}</Text>
           ) : (
-            <Text fontSize="sm" color="blue.600" fontWeight="medium">
+            <Text fontSize="lg" color="blue.600" fontWeight="semibold">
               {formatNextRefresh()}
             </Text>
           )}
