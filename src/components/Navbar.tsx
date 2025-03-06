@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { Box, Flex, Text, Spinner } from '@chakra-ui/react';
+import { Box, Flex, Text, Spinner, Button } from '@chakra-ui/react';
+import { useArticles } from '../context/ArticlesContext';
 
 interface RefreshStatus {
   lastUpdate: string;
@@ -11,6 +12,10 @@ const Navbar = () => {
   const [refreshStatus, setRefreshStatus] = useState<RefreshStatus | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [lastCheckedUpdate, setLastCheckedUpdate] = useState<string | null>(null);
+  
+  // Get articles context
+  const { hasNewArticles, loadNewArticles, checkForNewArticles } = useArticles();
 
   // Fetch refresh status
   const fetchRefreshStatus = async () => {
@@ -23,6 +28,16 @@ const Navbar = () => {
 
       const data = await response.json();
       console.log('Refresh status:', data);
+      
+      // Check if this is a new update compared to our last checked time
+      if (lastCheckedUpdate && data.lastUpdate !== lastCheckedUpdate) {
+        // A refresh has occurred since we last checked
+        console.log('Refresh detected, checking for new articles');
+        await checkForNewArticles();
+      }
+      
+      // Update our last checked time
+      setLastCheckedUpdate(data.lastUpdate);
       setRefreshStatus(data);
       setError(null);
 
@@ -51,7 +66,7 @@ const Navbar = () => {
       clearInterval(timeTimer);
       clearInterval(refreshTimer);
     };
-  }, []);
+  }, [lastCheckedUpdate]);
 
   // Format countdown time
   const formatNextRefresh = () => {
@@ -94,7 +109,19 @@ const Navbar = () => {
           </Text>
         </Box>
 
-        <Box width="250px" flexShrink={0} textAlign="right" ml="auto">
+        {hasNewArticles && (
+          <Box mx={2}>
+            <Button 
+              colorScheme="blue" 
+              size="sm"
+              onClick={loadNewArticles}
+            >
+              New articles available
+            </Button>
+          </Box>
+        )}
+
+        <Box width={hasNewArticles ? "200px" : "250px"} flexShrink={0} textAlign="right" ml="auto">
           {loading ? (
             <Flex align="center" justify="flex-end">
               <Spinner size="sm" mr={2} />
