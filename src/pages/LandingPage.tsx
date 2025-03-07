@@ -1,9 +1,18 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Box, Heading, Text, SimpleGrid, Button, VStack, Spinner, Container } from "@chakra-ui/react";
 import { ArticleDialog } from "../components/ArticleDialog";
 import { toaster } from "../components/ui/toaster";
 import { parseHTML } from "linkedom";
-import { useArticles, Article } from "../context/ArticlesContext";
+
+interface Article {
+  id: string;
+  title: string;
+  snippet: string;
+  url: string;
+  content?: string;
+  source: string;
+  publicationDatetime: string;
+}
 
 // Strip HTML tags and truncate text for previews
 const formatSnippet = (htmlContent: string, maxLength: number = 150): string => {
@@ -53,8 +62,49 @@ const formatSnippet = (htmlContent: string, maxLength: number = 150): string => 
 };
 
 const LandingPage: React.FC = () => {
-  const { articles, isLoading, error, fetchArticles } = useArticles();
+  const [articles, setArticles] = useState<Article[]>([]);
   const [selectedArticle, setSelectedArticle] = useState<Article | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchArticles = async () => {
+    try {
+      setIsLoading(true);
+      const response = await fetch("/articles");
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log("Fetched articles: \n", data);
+      setArticles(data);
+
+      // Show warning if there were partial errors
+      if (data.error) {
+        toaster.create({
+          title: "Some feeds failed to load",
+          description: data.error,
+          duration: 5000,
+        });
+      }
+
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Failed to fetch articles";
+      setError(message);
+      toaster.create({
+        title: "Error fetching articles",
+        description: message,
+        duration: 10000,
+      });
+
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchArticles();
+  }, []);
 
   const handleArticleClick = async (article: Article) => {
     try {
