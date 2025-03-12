@@ -9,6 +9,7 @@ interface Article {
   source: string;
   publicationDatetime: string;
   content?: string;
+  sourceUrl: string;
 }
 
 interface Env {

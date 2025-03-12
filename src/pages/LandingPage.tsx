@@ -12,6 +12,7 @@ interface Article {
   content?: string;
   source: string;
   publicationDatetime: string;
+  sourceUrl: string;
 }
 
 // Strip HTML tags and truncate text for previews

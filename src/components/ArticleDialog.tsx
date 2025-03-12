@@ -13,6 +13,7 @@ interface ArticleDialogProps {
     content?: string;
     source: string;
     publicationDatetime: string;
+    sourceUrl: string;
   };
 }
 
