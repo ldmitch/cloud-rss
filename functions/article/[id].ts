@@ -132,6 +132,165 @@ function extractArticleContent(html: string, baseUrl: string): string {
   }
 }
 
+// Fetch article content from RSS/ATOM feed
+async function fetchArticleContentFromFeed(article: Article): Promise<string | null> {
+  try {
+    const url = article.url;
+    const sourceUrl = article.sourceUrl;
+
+    console.log(`Fetching content from feed: ${sourceUrl}`);
+    console.log(`Looking for article with URL: ${url}`);
+
+    const response = await fetch(sourceUrl, {
+      headers: {
+        'Accept': 'application/rss+xml, application/atom+xml, application/xml, text/xml'
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch feed: ${response.status}`);
+    }
+
+    const xmlContent = await response.text();
+    console.log(`Feed fetched successfully, size: ${xmlContent.length} bytes`);
+
+    const { document } = parseHTML(xmlContent);
+
+    // Handle both RSS and Atom feeds
+    const items = document.querySelectorAll('item, entry');
+    console.log(`Found ${items.length} items in the feed`);
+
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i];
+
+      // Extract link using multiple approaches
+      let link = '';
+
+      // Approach 1: Try to get link directly from the item's outerHTML
+      const itemHtml = item.outerHTML || '';
+      const linkRegex = /<link[^>]*?>([^<]*)<\/link>|<link[^>]*?>([^<]*)/i;
+      const linkMatch = itemHtml.match(linkRegex);
+
+      if (linkMatch && (linkMatch[1] || linkMatch[2])) {
+        link = (linkMatch[1] || linkMatch[2] || '').trim();
+        console.log(`Found link using regex: ${link}`);
+      }
+
+      // Approach 2: Traditional querySelector approach
+      else {
+        const linkElement = item.querySelector('link');
+        if (linkElement) {
+          // Try getting the text content
+          if (linkElement.textContent && linkElement.textContent.trim()) {
+            link = linkElement.textContent.trim();
+            console.log(`Found link (text content): ${link}`);
+          }
+          // Try getting href attribute (for Atom feeds)
+          else if (linkElement.getAttribute('href')) {
+            link = linkElement.getAttribute('href').trim();
+            console.log(`Found link (href attribute): ${link}`);
+          }
+          // Last resort: get the innerHTML
+          else {
+            const rawHtml = linkElement.outerHTML || '';
+            const innerMatch = rawHtml.match(/>([^<]*)</);
+            if (innerMatch && innerMatch[1]) {
+              link = innerMatch[1].trim();
+              console.log(`Found link (extracted from raw HTML): ${link}`);
+            }
+          }
+        }
+      }
+      console.log(`Link found: ${link}`);
+
+      // Normalize URLs for comparison (remove trailing slashes)
+      const normalizeUrl = (url: string) => url.replace(/\/+$/, '');
+      const articleUrl = normalizeUrl(url);
+      const itemUrl = normalizeUrl(link);
+
+      console.log(`Comparing: ${itemUrl} === ${articleUrl}`);
+
+      // Compare the normalized URLs
+      if (itemUrl === articleUrl) {
+        console.log(`Match found! Looking for content`);
+
+        // Try different content elements that might contain the article content
+        const contentElement =
+          item.querySelector('content\\:encoded') || // RSS with content:encoded namespace
+          item.querySelector('content') ||           // Atom content
+          item.querySelector('description');         // RSS description fallback
+
+        if (contentElement) {
+          let content = '';
+
+          // Get the full item XML to extract CDATA content directly
+          const fullItemXml = item.outerHTML || '';
+
+          // Try to locate the specific content element in the raw XML
+          let contentTagName = '';
+          if (item.querySelector('content\\:encoded')) contentTagName = 'content:encoded';
+          else if (item.querySelector('content')) contentTagName = 'content';
+          else if (item.querySelector('description')) contentTagName = 'description';
+
+          console.log(`Content element tag: ${contentTagName}`);
+
+          // Extract content from raw XML using regex for the specific tag
+          if (contentTagName) {
+            const tagContentRegex = new RegExp(`<${contentTagName}[^>]*>\\s*(?:<!\\[CDATA\\[)?(.*?)(?:\\]\\]>)?\\s*</${contentTagName}>`, 's');
+            const match = fullItemXml.match(tagContentRegex);
+
+            if (match && match[1]) {
+              content = match[1].trim();
+              console.log(`Extracted content using raw XML regex, length: ${content.length}`);
+            } else {
+              // Fall back to DOM-based extraction
+              const rawContent = contentElement.textContent || '';
+              const outerHtml = contentElement.outerHTML || '';
+
+              console.log(`Raw content length: ${rawContent.length}`);
+              console.log(`Raw HTML length: ${outerHtml.length}`);
+
+              // Check for CDATA sections using string matching
+              if (outerHtml.includes('CDATA')) {
+                const cdataPattern = /<!\[CDATA\[([\s\S]*?)\]\]>/i;
+                const cdataMatch = outerHtml.match(cdataPattern);
+
+                if (cdataMatch && cdataMatch[1]) {
+                  content = cdataMatch[1].trim();
+                  console.log(`Extracted CDATA content from outerHTML`);
+                } else {
+                  content = rawContent.trim();
+                  console.log(`Using raw content as fallback`);
+                }
+              } else {
+                content = rawContent.trim();
+                console.log(`Using raw content (no CDATA detected)`);
+              }
+            }
+          }
+
+          console.log(`Content found, length: ${content.length} characters`);
+
+          // If content is HTML, fix relative URLs
+          if (content.includes('<') && content.includes('>')) {
+            content = resolveRelativeUrls(content, getBaseUrl(url));
+          }
+
+          return content;
+        } else {
+          console.log('No content element found in the matching item');
+        }
+      }
+    }
+
+    console.log(`Article with URL ${url} not found in feed`);
+    return null;
+  } catch (error) {
+    console.error(`Error fetching article content from feed ${article.sourceUrl}:`, error);
+    return null;
+  }
+}
+
 // Fetch article content from the original URL
 async function fetchArticleContent(url: string): Promise<string | null> {
   try {
@@ -174,8 +333,17 @@ export const onRequest: PagesFunction<Env> = async (context) => {
       return new Response("Article not found", { status: 404 });
     }
 
-    // Fetch the full content
-    const content = await fetchArticleContent(article.url);
+    // First try to get content from the feed
+    let content = await fetchArticleContentFromFeed(article);
+
+    // Otherwise, fall back to scraping the page
+    if (!content) {
+      console.log(`Falling back to page scraping for ${article.url}`);
+      content = await fetchArticleContent(article.url);
+    } else {
+      console.log(`Successfully fetched content from feed for ${article.url}`);
+    }
+
     if (content) {
       article.content = content;
     } else {
