@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { VStack, Text, Heading, Link, Box, Spinner, Center } from '@chakra-ui/react';
 import { DialogRoot, DialogContent, DialogHeader, DialogBody, DialogCloseTrigger, DialogBackdrop } from './ui/dialog';
+import './ArticleContent.css';
 
 interface ArticleDialogProps {
   isOpen: boolean;
@@ -31,6 +32,19 @@ export const ArticleDialog: React.FC<ArticleDialogProps> = ({ isOpen, onClose, a
 
   // Process the article content to preserve newlines and sanitize problematic elements
   const processContent = (content: string) => {
+    // Handle empty content case
+    if (!content || content.trim().length === 0) {
+      return '<p>No content available. Please view the original article.</p>';
+    }
+
+    // Decode HTML entities (convert &lt; to <, &gt; to >, etc.)
+    const decodingDiv = document.createElement('textarea');
+    decodingDiv.innerHTML = content;
+    content = decodingDiv.value;
+
+    // Remove any remaining CDATA markers that might have slipped through
+    content = content.replace(/<!--?\[CDATA\[|\]\]--?>/g, '');
+
     // Create a temporary container to manipulate the HTML content
     const tempDiv = document.createElement('div');
     tempDiv.innerHTML = content;
@@ -127,34 +141,6 @@ export const ArticleDialog: React.FC<ArticleDialogProps> = ({ isOpen, onClose, a
                 width="100%"
                 className="article-content"
                 position="relative"
-                css={{
-                  overflow: 'hidden',
-                  '& p': {
-                    marginBottom: '1em',
-                    whiteSpace: 'pre-wrap',
-                  },
-                  '& > p:last-child': {
-                    marginBottom: 0
-                  },
-                  '& a': {
-                    color: '#3182CE', // This is Chakra UI's blue.500 color
-                    textDecoration: 'none',
-                  },
-                  '& a:hover': {
-                    textDecoration: 'underline',
-                  },
-                  '& img': {
-                    maxWidth: '100%',
-                    height: 'auto',
-                    position: 'static',
-                    display: 'block',
-                    margin: '1rem 0',
-                  },
-                  '& div': {
-                    position: 'relative',
-                    maxWidth: '100%'
-                  }
-                }}
               />
             ) : (
               <Text whiteSpace="pre-wrap">

@@ -1,0 +1,75 @@
+.article-content {
+  overflow: hidden;
+}
+
+.article-content p {
+  margin-bottom: 1em;
+  white-space: pre-wrap;
+}
+
+.article-content>p:last-child {
+  margin-bottom: 0;
+}
+
+.article-content h1,
+.article-content h2,
+.article-content h3,
+.article-content h4,
+.article-content h5,
+.article-content h6 {
+  font-weight: bold;
+  line-height: 1.2;
+  margin-top: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.article-content h1 {
+  font-size: 2rem;
+}
+
+.article-content h2 {
+  font-size: 1.8rem;
+}
+
+.article-content h3 {
+  font-size: 1.5rem;
+}
+
+.article-content h4 {
+  font-size: 1.25rem;
+}
+
+.article-content h5 {
+  font-size: 1.1rem;
+}
+
+.article-content h6 {
+  font-size: 1rem;
+}
+
+.article-content a {
+  color: #3182CE;
+  text-decoration: none;
+}
+
+.article-content a:hover {
+  text-decoration: underline;
+}
+
+.article-content img {
+  max-width: 100%;
+  height: auto;
+  position: static;
+  display: block;
+  margin: 1rem 0;
+}
+
+.article-content ul,
+.article-content ol {
+  padding-left: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.article-content li {
+  margin-bottom: 0.5rem;
+}
