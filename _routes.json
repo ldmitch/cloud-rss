@@ -1,14 +1,7 @@
 {
   "version": 1,
-  "include": [
-    "/*"
-  ],
-  "exclude": [
-    "/assets/*",
-    "/images/*",
-    "/_astro/*",
-    "/favicon.ico"
-  ],
+  "include": ["/*"],
+  "exclude": ["/assets/*", "/images/*", "/_astro/*", "/favicon.ico"],
   "routes": [
     {
       "pattern": "/articles",

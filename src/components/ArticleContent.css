@@ -7,7 +7,7 @@
   white-space: pre-wrap;
 }
 
-.article-content>p:last-child {
+.article-content > p:last-child {
   margin-bottom: 0;
 }
 
@@ -48,7 +48,7 @@
 }
 
 .article-content a {
-  color: #3182CE;
+  color: #3182ce;
   text-decoration: none;
 }
 

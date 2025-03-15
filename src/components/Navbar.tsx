@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { Box, Flex, Text } from '@chakra-ui/react';
+import { useEffect, useState } from "react";
+import { Box, Flex, Text } from "@chakra-ui/react";
 
 const Navbar = () => {
   const [currentTime, setCurrentTime] = useState<Date>(new Date());
@@ -30,7 +30,7 @@ const Navbar = () => {
       <Flex align="center" justify="center">
         <Box width="250px" textAlign="center">
           <Text fontSize="lg" fontWeight="semibold" color="black">
-            {`${currentTime.toLocaleDateString("en-GB")} 
+            {`${currentTime.toLocaleDateString("en-GB")}
             ${currentTime.toLocaleTimeString("en-GB", { hour12: false })}`}
           </Text>
         </Box>

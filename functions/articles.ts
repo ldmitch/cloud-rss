@@ -7,7 +7,7 @@ interface Env {
 // Handler for /articles endpoint
 export const onRequest: PagesFunction<Env> = async (context) => {
   const kv = context.env.ARTICLES;
-  console.log(kv)
+  console.log(kv);
 
   try {
     // Retrieve articles from KV storage
@@ -24,12 +24,14 @@ export const onRequest: PagesFunction<Env> = async (context) => {
     return new Response(articlesJson, {
       headers: { "Content-Type": "application/json" },
     });
-
   } catch (error) {
     console.error("Error retrieving articles from KV:", error);
-    return new Response(JSON.stringify({ error: "Failed to retrieve articles" }), {
-      status: 500,
-      headers: { "Content-Type": "application/json" },
-    });
+    return new Response(
+      JSON.stringify({ error: "Failed to retrieve articles" }),
+      {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
+      },
+    );
   }
-}
+};
