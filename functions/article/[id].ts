@@ -194,7 +194,8 @@ async function fetchArticleContentFromFeed(
 
       // Approach 1: Try to get link directly from the item's outerHTML
       const itemHtml = item.outerHTML || "";
-      const linkRegex = /<link[^>]*?>([^<]*)<\/link>|<link[^>]*?>([^<]*)/i;
+      const linkRegex =
+        /<link[^>]*?>([^<]*)<\/link>|<link[^>]*?href="([^"]*)"[^>]*?>/i;
       const linkMatch = itemHtml.match(linkRegex);
 
       if (linkMatch && (linkMatch[1] || linkMatch[2])) {
@@ -203,7 +204,7 @@ async function fetchArticleContentFromFeed(
       }
 
       // Approach 2: Traditional querySelector approach
-      else {
+      if (!link) {
         const linkElement = item.querySelector("link");
         if (linkElement) {
           // Try getting the text content
@@ -227,14 +228,30 @@ async function fetchArticleContentFromFeed(
           }
         }
       }
+
+      // Approach 3: For Incident.io feeds, try the id element as a fallback
+      if (!link) {
+        const idElement = item.querySelector("id");
+        if (idElement && idElement.textContent) {
+          link = idElement.textContent.trim();
+          console.log(`Using id element as link fallback: ${link}`);
+        }
+      }
+
       console.log(`Link found: ${link}`);
 
-      // Normalize URLs for comparison (remove trailing slashes)
-      const normalizeUrl = (url: string) => url.replace(/\/+$/, "");
+      // Normalize URLs for comparison (remove trailing slashes and fix double slashes)
+      const normalizeUrl = (url: string) => {
+        // Replace double slashes in the path part (not in the protocol)
+        const normalizedUrl = url.replace(/(https?:\/\/)([^/]+)\/+/g, "$1$2/");
+        // Remove trailing slashes
+        return normalizedUrl.replace(/\/+$/, "");
+      };
+
       const articleUrl = normalizeUrl(url);
       const itemUrl = normalizeUrl(link);
 
-      console.log(`Comparing: ${itemUrl} === ${articleUrl}`);
+      console.log(`Comparing (normalized): ${itemUrl} === ${articleUrl}`);
 
       // Compare the normalized URLs
       if (itemUrl === articleUrl) {
