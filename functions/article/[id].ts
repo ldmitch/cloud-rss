@@ -244,7 +244,8 @@ async function fetchArticleContentFromFeed(
         const contentElement =
           item.querySelector("content\\:encoded") || // RSS with content:encoded namespace
           item.querySelector("content") || // Atom content
-          item.querySelector("description"); // RSS description fallback
+          item.querySelector("description") || // RSS description fallback
+          item.querySelector("summary"); // Atom summary fallback
 
         if (contentElement) {
           let content = "";
@@ -259,6 +260,7 @@ async function fetchArticleContentFromFeed(
           else if (item.querySelector("content")) contentTagName = "content";
           else if (item.querySelector("description"))
             contentTagName = "description";
+          else if (item.querySelector("summary")) contentTagName = "summary";
 
           console.log(`Content element tag: ${contentTagName}`);
 
@@ -277,11 +279,16 @@ async function fetchArticleContentFromFeed(
               );
             } else {
               // Fall back to DOM-based extraction
+              // Check for type="html" attribute for Atom feeds
+              const isHtmlType = contentElement.getAttribute("type") === "html";
+
+              // Get content
               const rawContent = contentElement.textContent || "";
               const outerHtml = contentElement.outerHTML || "";
 
               console.log(`Raw content length: ${rawContent.length}`);
               console.log(`Raw HTML length: ${outerHtml.length}`);
+              console.log(`HTML type: ${isHtmlType ? "yes" : "no"}`);
 
               // Check for CDATA sections using string matching
               if (outerHtml.includes("CDATA")) {
