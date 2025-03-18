@@ -187,49 +187,52 @@ async function fetchArticleContentFromFeed(
     console.log(`Found ${items.length} items in the feed`);
 
     for (let i = 0; i < items.length; i++) {
-      const item = items[i];
+      const item = items[i];´
 
       // Extract link using multiple approaches
       let link = "";
 
-      // Approach 1: Try to get link directly from the item's outerHTML
-      const itemHtml = item.outerHTML || "";
-      const linkRegex =
-        /<link[^>]*?>([^<]*)<\/link>|<link[^>]*?href="([^"]*)"[^>]*?>/i;
-      const linkMatch = itemHtml.match(linkRegex);
-
-      if (linkMatch && (linkMatch[1] || linkMatch[2])) {
-        link = (linkMatch[1] || linkMatch[2] || "").trim();
-        console.log(`Found link using regex: ${link}`);
+      // Approach 1: Direct access to link node's textContent for RSS feeds
+      const linkElement = item.querySelector("link");
+      if (linkElement && linkElement.textContent) {
+        link = linkElement.textContent.trim();
+        console.log(`Found link from textContent: ${link}`);
       }
+      // Approach 2: Try to get href attribute for Atom feeds
+      else if (linkElement && linkElement.getAttribute("href")) {
+        link = linkElement.getAttribute("href").trim();
+        console.log(`Found link from href attribute: ${link}`);
+      }
+      // Approach 3: Try to get link directly from the item's outerHTML using regex
+      else {
+        const itemHtml = item.outerHTML || "";
+        // Look for <link> tags with text content
+        const linkRegex1 = /<link[^>]*?>([^<]+)<\/link>/i;
+        // Look for <link href="..."> tags
+        const linkRegex2 = /<link[^>]*?href="([^"]*)"[^>]*?>/i;
 
-      // Approach 2: Traditional querySelector approach
-      if (!link) {
-        const linkElement = item.querySelector("link");
-        if (linkElement) {
-          // Try getting the text content
-          if (linkElement.textContent && linkElement.textContent.trim()) {
-            link = linkElement.textContent.trim();
-            console.log(`Found link (text content): ${link}`);
-          }
-          // Try getting href attribute (for Atom feeds)
-          else if (linkElement.getAttribute("href")) {
-            link = linkElement.getAttribute("href").trim();
-            console.log(`Found link (href attribute): ${link}`);
-          }
-          // Last resort: get the innerHTML
-          else {
-            const rawHtml = linkElement.outerHTML || "";
-            const innerMatch = rawHtml.match(/>([^<]*)</);
-            if (innerMatch && innerMatch[1]) {
-              link = innerMatch[1].trim();
-              console.log(`Found link (extracted from raw HTML): ${link}`);
-            }
-          }
+        const linkMatch1 = itemHtml.match(linkRegex1);
+        const linkMatch2 = itemHtml.match(linkRegex2);
+
+        if (linkMatch1 && linkMatch1[1]) {
+          link = linkMatch1[1].trim();
+          console.log(`Found link using text content regex: ${link}`);
+        } else if (linkMatch2 && linkMatch2[1]) {
+          link = linkMatch2[1].trim();
+          console.log(`Found link using href regex: ${link}`);
         }
       }
 
-      // Approach 3: For Incident.io feeds, try the id element as a fallback
+      // Approach 4: For RSS, try the guid element as a fallback
+      if (!link) {
+        const guidElement = item.querySelector("guid");
+        if (guidElement && guidElement.textContent) {
+          link = guidElement.textContent.trim();
+          console.log(`Using guid element as link fallback: ${link}`);
+        }
+      }
+
+      // Approach 5: For Atom feeds, try the id element as a fallback
       if (!link) {
         const idElement = item.querySelector("id");
         if (idElement && idElement.textContent) {
@@ -238,10 +241,11 @@ async function fetchArticleContentFromFeed(
         }
       }
 
-      console.log(`Link found: ${link}`);
+      console.log(`Final link found: ${link}`);
 
       // Normalize URLs for comparison (remove trailing slashes and fix double slashes)
       const normalizeUrl = (url: string) => {
+        if (!url) return "";
         // Replace double slashes in the path part (not in the protocol)
         const normalizedUrl = url.replace(/(https?:\/\/)([^/]+)\/+/g, "$1$2/");
         // Remove trailing slashes
