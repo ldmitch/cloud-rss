@@ -187,7 +187,7 @@ async function fetchArticleContentFromFeed(
     console.log(`Found ${items.length} items in the feed`);
 
     for (let i = 0; i < items.length; i++) {
-      const item = items[i];´
+      const item = items[i];
 
       // Extract link using multiple approaches
       let link = "";
