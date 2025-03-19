@@ -1,3 +1,5 @@
+"use strict";
+
 import type { PagesFunction } from "@cloudflare/workers-types";
 import { parseHTML } from "linkedom";
 
@@ -14,6 +16,17 @@ interface Article {
 
 interface Env {
   ARTICLES: KVNamespace;
+}
+
+// Helper: Strip CDATA wrappers from a string
+function stripCDATA(content: string): string {
+  return content.replace(/<!\[CDATA\[/g, "").replace(/\]\]>/g, "");
+}
+
+// Helper: Remove HTML comment wrappers if present
+function stripHtmlComments(content: string): string {
+  // Remove leading <!-- and trailing -->
+  return content.replace(/^<!--\s*/, "").replace(/\s*-->$/, "");
 }
 
 // Extract the base URL from a full URL
@@ -246,9 +259,7 @@ async function fetchArticleContentFromFeed(
       // Normalize URLs for comparison (remove trailing slashes and fix double slashes)
       const normalizeUrl = (url: string) => {
         if (!url) return "";
-        // Replace double slashes in the path part (not in the protocol)
         const normalizedUrl = url.replace(/(https?:\/\/)([^/]+)\/+/g, "$1$2/");
-        // Remove trailing slashes
         return normalizedUrl.replace(/\/+$/, "");
       };
 
@@ -270,10 +281,8 @@ async function fetchArticleContentFromFeed(
 
         if (contentElement) {
           let content = "";
-
           // Get the full item XML to extract CDATA content directly
           const fullItemXml = item.outerHTML || "";
-
           // Try to locate the specific content element in the raw XML
           let contentTagName = "";
           if (item.querySelector("content\\:encoded"))
@@ -295,27 +304,25 @@ async function fetchArticleContentFromFeed(
 
             if (match && match[1]) {
               content = match[1].trim();
+              // First strip out any CDATA tokens...
+              content = stripCDATA(content);
+              // Next, remove any HTML comment wrappers
+              content = stripHtmlComments(content);
               console.log(
                 `Extracted content using raw XML regex, length: ${content.length}`,
               );
             } else {
               // Fall back to DOM-based extraction
-              // Check for type="html" attribute for Atom feeds
               const isHtmlType = contentElement.getAttribute("type") === "html";
-
-              // Get content
               const rawContent = contentElement.textContent || "";
               const outerHtml = contentElement.outerHTML || "";
-
               console.log(`Raw content length: ${rawContent.length}`);
               console.log(`Raw HTML length: ${outerHtml.length}`);
               console.log(`HTML type: ${isHtmlType ? "yes" : "no"}`);
 
-              // Check for CDATA sections using string matching
               if (outerHtml.includes("CDATA")) {
                 const cdataPattern = /<!\[CDATA\[([\s\S]*?)\]\]>/i;
                 const cdataMatch = outerHtml.match(cdataPattern);
-
                 if (cdataMatch && cdataMatch[1]) {
                   content = cdataMatch[1].trim();
                   console.log(`Extracted CDATA content from outerHTML`);
@@ -327,12 +334,15 @@ async function fetchArticleContentFromFeed(
                 content = rawContent.trim();
                 console.log(`Using raw content (no CDATA detected)`);
               }
+              // Also remove any CDATA tokens and HTML comment wrappers if present
+              content = stripCDATA(content);
+              content = stripHtmlComments(content);
             }
           }
 
           console.log(`Content found, length: ${content.length} characters`);
 
-          // If content is HTML, fix relative URLs
+          // Finally, if the content is HTML, fix relative URLs
           if (content.includes("<") && content.includes(">")) {
             content = resolveRelativeUrls(content, getBaseUrl(url));
           }
