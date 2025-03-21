@@ -61,9 +61,6 @@ export const ArticleDialog: React.FC<ArticleDialogProps> = ({
     decodingDiv.innerHTML = content;
     content = decodingDiv.value;
 
-    // Remove any remaining CDATA markers that might have slipped through
-    content = content.replace(/<!--?\[CDATA\[|\]\]--?>/g, "");
-
     // Create a temporary container to manipulate the HTML content
     const tempDiv = document.createElement("div");
     tempDiv.innerHTML = content;

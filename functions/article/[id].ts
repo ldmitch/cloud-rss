@@ -20,7 +20,18 @@ interface Env {
 
 // Helper: Strip CDATA wrappers from a string
 function stripCDATA(content: string): string {
-  return content.replace(/<!\[CDATA\[/g, "").replace(/\]\]>/g, "");
+  // Remove any opening "<![CDATA[" or "[CDATA[" and the corresponding closing "]]>" or "]]"
+  // capturing the inside as group $1 and returning it (so you keep just the inside).
+  // The 's' (dotAll) flag ensures the dot also matches newlines.
+  // The 'g' flag removes ALL occurrences in one pass.
+  return (
+    content
+      .replace(/<!?\[CDATA\[(.*?)\]\]>/gs, "$1")
+      // In case there are partial leftovers like “[CDATA[” without the closing,
+      // or the parser returned them without exclamation mark:
+      .replace(/\[CDATA\[/g, "")
+      .replace(/\]\]/g, "")
+  );
 }
 
 // Helper: Remove HTML comment wrappers if present
