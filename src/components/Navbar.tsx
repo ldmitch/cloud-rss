@@ -14,6 +14,16 @@ const Navbar = () => {
     };
   }, []);
 
+  const year = currentTime.getFullYear();
+  const month = String(currentTime.getMonth() + 1).padStart(2, "0");
+  const day = String(currentTime.getDate()).padStart(2, "0");
+  const hours = String(currentTime.getHours()).padStart(2, "0");
+  const minutes = String(currentTime.getMinutes()).padStart(2, "0");
+  const seconds = String(currentTime.getSeconds()).padStart(2, "0");
+
+  // Construct the desired format "yyyy-mm-dd hh:mm:ss"
+  const formattedTime = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+
   return (
     <Box
       position="fixed"
@@ -30,8 +40,7 @@ const Navbar = () => {
       <Flex align="center" justify="center">
         <Box width="250px" textAlign="center">
           <Text fontSize="lg" fontWeight="semibold" color="black">
-            {`${currentTime.toLocaleDateString("en-GB")}
-            ${currentTime.toLocaleTimeString("en-GB", { hour12: false })}`}
+            {formattedTime}
           </Text>
         </Box>
       </Flex>
