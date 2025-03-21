@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   VStack,
   Text,
@@ -39,6 +39,9 @@ export const ArticleDialog: React.FC<ArticleDialogProps> = ({
   article,
 }) => {
   const [isLoading, setIsLoading] = useState(article.content === undefined);
+  const [isTitleExpanded, setIsTitleExpanded] = useState(false);
+  const [isTruncated, setIsTruncated] = useState(false);
+  const headingRef = useRef<HTMLHeadingElement>(null);
 
   // Update loading state when article content changes
   useEffect(() => {
@@ -48,6 +51,14 @@ export const ArticleDialog: React.FC<ArticleDialogProps> = ({
   const handleOpenChange = ({ open }: { open: boolean }) => {
     if (!open) onClose();
   };
+
+  useEffect(() => {
+    if (headingRef.current) {
+      const header = headingRef.current;
+      // If the element’s scrollHeight is > clientHeight, it’s definitely truncated
+      setIsTruncated(header.scrollHeight > header.clientHeight);
+    }
+  }, [article.title]);
 
   // Process the article content to preserve newlines and sanitize problematic elements
   const processContent = (content: string) => {
@@ -118,8 +129,22 @@ export const ArticleDialog: React.FC<ArticleDialogProps> = ({
         className="rounded-lg overflow-hidden"
       >
         <DialogHeader className="font-semibold" style={{ flex: "0 0 auto" }}>
-          <Heading as="h2" fontSize="4xl">
+          <Heading
+            ref={headingRef}
+            as="h2"
+            fontSize="4xl"
+            position="relative"
+            className={`title-base ${!isTitleExpanded ? "clamped-title" : ""}`}
+            style={{ cursor: "pointer" }}
+            onClick={() => setIsTitleExpanded(!isTitleExpanded)}
+          >
             {article.title}
+            {/* Show the “... Show More” text only if we are truncated AND not expanded */}
+            {!isTitleExpanded && isTruncated && (
+              <Box as="span" color="blue.500" ml={2}>
+                ... show more
+              </Box>
+            )}
           </Heading>
           <DialogCloseTrigger />
         </DialogHeader>
