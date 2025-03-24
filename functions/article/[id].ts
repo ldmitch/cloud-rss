@@ -247,6 +247,19 @@ async function fetchArticleContentFromFeed(
         }
       }
 
+      // Approach 3.5: Handle unclosed link tags (like in Cloudflare's feed)
+      if (!link) {
+        const itemHtml = item.outerHTML || "";
+        // This pattern looks for <link> followed by text until the next tag starts
+        const unclosedLinkRegex = /<link[^>]*>([^<]+)/i;
+        const unclosedMatch = itemHtml.match(unclosedLinkRegex);
+
+        if (unclosedMatch && unclosedMatch[1]) {
+          link = unclosedMatch[1].trim();
+          console.log(`Found link using unclosed tag regex: ${link}`);
+        }
+      }
+
       // Approach 4: For RSS, try the guid element as a fallback
       if (!link) {
         const guidElement = item.querySelector("guid");
