@@ -24,7 +24,7 @@ interface Article {
   sourceUrl: string;
 }
 
-// Strip HTML tags and truncate text for previews
+/// Strip HTML tags and truncate text for previews
 const formatSnippet = (
   htmlContent: string,
   maxLength: number = 150,
@@ -53,28 +53,25 @@ const formatSnippet = (
       }
     });
 
-    // Get the text content from the document
     const divElement = document.querySelector("div");
-    let text = divElement ? divElement.textContent || "" : "";
+    let text = divElement ? divElement.textContent || "" : ""; // Clean up the text (remove extra spaces, line breaks, etc.)
 
-    // Clean up the text (remove extra spaces, line breaks, etc.)
-    text = text.replace(/\s+/g, " ").trim();
+    text = text.replace(/\s+/g, " ").trim(); // Truncate if longer than maxLength
 
-    // Truncate if longer than maxLength
     if (text.length > maxLength) {
-      return `${text.substring(0, maxLength)}...`;
+      return `${text.substring(0, maxLength)}…`;
     }
 
     return text;
   } catch (error) {
     console.error("Error formatting snippet:", error);
 
-    // Fallback to simple regex-based HTML stripping
+    // Fallback to a simpler method if parsing fails
     const strippedHtml = htmlContent.replace(/<[^>]*>?/gm, "");
     const cleanText = strippedHtml.replace(/\s+/g, " ").trim();
 
     if (cleanText.length > maxLength) {
-      return `${cleanText.substring(0, maxLength)}...`;
+      return `${cleanText.substring(0, maxLength)}…`;
     }
 
     return cleanText;
