@@ -19,6 +19,7 @@ import {
   DialogBackdrop,
 } from "./ui/dialog";
 import DOMPurify from "dompurify";
+import he from "he";
 import "./ArticleContent.css";
 
 interface ArticleDialogProps {
@@ -42,14 +43,12 @@ const processContent = (content: string | undefined): string => {
     return "<p>No content available. Please view the original article.</p>";
   }
 
-  // Decode potential HTML entities first
+  // Decode HTML entities using the 'he' library
   let decodedContent: string;
   try {
-    const decodingEl = document.createElement("textarea");
-    decodingEl.innerHTML = content;
-    decodedContent = decodingEl.value;
+    decodedContent = he.decode(content);
   } catch (error) {
-    console.error("Error decoding HTML entities:", error);
+    console.error("Error decoding HTML entities with 'he':", error);
     decodedContent = content; // Fallback to original content on decoding error
   }
 
@@ -81,7 +80,7 @@ const processContent = (content: string | undefined): string => {
       processedHtml = decodedContent; // Fallback to decoded content on parsing error
     }
   } else {
-    // Process as plain text
+    // Process as plain text (already decoded)
     processedHtml = decodedContent
       .split("\n\n")
       .map((paragraph) => paragraph.trim())
@@ -94,8 +93,10 @@ const processContent = (content: string | undefined): string => {
   let sanitizedHtml = "";
   try {
     sanitizedHtml = DOMPurify.sanitize(processedHtml, {
-      ADD_ATTR: ["target", "rel"],
-      USE_PROFILES: { html: true },
+      ADD_ATTR: ["target", "rel"], // Allow target and rel attributes for links
+      USE_PROFILES: { html: true }, // Use standard HTML tags/attributes
+      // ADD_TAGS: [], // Add any specific tags you need to be allowed if DOMPurify strips them
+      // ADD_ATTR: ['class'], // Example: To preserve specific classes
     });
   } catch (error) {
     console.error("Error during DOMPurify sanitization:", error);
@@ -209,6 +210,7 @@ export const ArticleDialog: React.FC<ArticleDialogProps> = ({
             bg="none"
             border="none"
             cursor="pointer"
+            aria-label="Close dialog"
           />
         </DialogHeader>
 
@@ -249,7 +251,7 @@ export const ArticleDialog: React.FC<ArticleDialogProps> = ({
                 className="article-content"
               />
             ) : (
-              // Fallback to snippet
+              // Fallback to snippet if content is empty/null after loading attempt
               <Text whiteSpace="pre-wrap">{article.snippet}</Text>
             )}
           </VStack>
