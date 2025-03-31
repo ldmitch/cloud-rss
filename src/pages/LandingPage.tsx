@@ -9,9 +9,9 @@ import {
   Spinner,
   Container,
 } from "@chakra-ui/react";
+import { format, isValid } from "date-fns";
 import { ArticleDialog } from "../components/ArticleDialog";
 import { toaster } from "../components/ui/toaster";
-import { parseHTML } from "linkedom";
 
 interface Article {
   id: string;
@@ -24,15 +24,19 @@ interface Article {
   sourceUrl: string;
 }
 
-/// Strip HTML tags and truncate text for previews
 const formatSnippet = (
   htmlContent: string,
   maxLength: number = 150,
 ): string => {
   try {
-    // Use linkedom to parse HTML and extract text content
-    const { document } = parseHTML(`<div>${htmlContent}</div>`);
+    const parser = new DOMParser();
+    // Wrap in div in case the snippet is just text or inline elements
+    const doc = parser.parseFromString(
+      `<div>${htmlContent}</div>`,
+      "text/html",
+    );
 
+    // Elements to remove before extracting text
     const elementsToRemove = [
       "script",
       "style",
@@ -47,34 +51,32 @@ const formatSnippet = (
       "button",
     ];
     elementsToRemove.forEach((selector) => {
-      const elements = document.querySelectorAll(selector);
-      for (let i = 0; i < elements.length; i++) {
-        elements[i].remove();
-      }
+      doc.body.querySelectorAll(selector).forEach((el) => el.remove());
     });
 
-    const divElement = document.querySelector("div");
-    let text = divElement ? divElement.textContent || "" : ""; // Clean up the text (remove extra spaces, line breaks, etc.)
-
-    text = text.replace(/\s+/g, " ").trim(); // Truncate if longer than maxLength
-
+    let text = doc.body.textContent || "";
+    text = text.replace(/\s+/g, " ").trim();
     if (text.length > maxLength) {
       return `${text.substring(0, maxLength)}…`;
     }
 
     return text;
   } catch (error) {
-    console.error("Error formatting snippet:", error);
+    console.error("Error formatting snippet using DOMParser:", error);
 
-    // Fallback to a simpler method if parsing fails
-    const strippedHtml = htmlContent.replace(/<[^>]*>?/gm, "");
-    const cleanText = strippedHtml.replace(/\s+/g, " ").trim();
+    // Fallback to a simpler regex method if parsing fails
+    try {
+      const strippedHtml = htmlContent.replace(/<[^>]*>?/gm, "");
+      const cleanText = strippedHtml.replace(/\s+/g, " ").trim();
 
-    if (cleanText.length > maxLength) {
-      return `${cleanText.substring(0, maxLength)}…`;
+      if (cleanText.length > maxLength) {
+        return `${cleanText.substring(0, maxLength)}…`;
+      }
+      return cleanText;
+    } catch (fallbackError) {
+      console.error("Error in fallback snippet formatting:", fallbackError);
+      return "Snippet unavailable";
     }
-
-    return cleanText;
   }
 };
 
@@ -87,6 +89,7 @@ const LandingPage: React.FC = () => {
   const fetchArticles = async () => {
     try {
       setIsLoading(true);
+      setError(null);
       const response = await fetch("/articles");
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -94,9 +97,10 @@ const LandingPage: React.FC = () => {
 
       const data = await response.json();
       console.log("Fetched articles: \n", data);
-      setArticles(data);
 
-      // Show warning if there were partial errors
+      const fetchedArticles = data.articles || data || [];
+      setArticles(fetchedArticles);
+
       if (data.error) {
         toaster.create({
           title: "Some feeds failed to load",
@@ -123,23 +127,25 @@ const LandingPage: React.FC = () => {
   }, []);
 
   const handleArticleClick = async (article: Article) => {
-    try {
-      setSelectedArticle(article);
+    setSelectedArticle(article);
 
-      // Then fetch the full content
+    try {
+      // Fetch the full content
       const response = await fetch(`/article/${article.id}`);
       if (!response.ok) {
-        console.log("Content-Type:", response.headers.get("Content-Type"));
-        throw new Error(`HTTP error! status: ${response.status}`);
+        console.error("Content-Type:", response.headers.get("Content-Type"));
+        const errorText = await response.text();
+        throw new Error(
+          `HTTP error! status: ${response.status}, body: ${errorText}`,
+        );
       }
-      const data = await response.json();
 
-      // Update the selected article with full content
+      const data = await response.json();
       setSelectedArticle((prev) =>
         prev ? { ...prev, content: data.content } : null,
       );
     } catch (err) {
-      console.error("Error fetching article:", err);
+      console.error("Error fetching article content:", err);
       const message =
         err instanceof Error ? err.message : "Failed to fetch article content";
       toaster.create({
@@ -150,13 +156,27 @@ const LandingPage: React.FC = () => {
     }
   };
 
+  const formatDate = (dateString: string): string => {
+    try {
+      const date = new Date(dateString);
+      if (isValid(date)) {
+        // Example format: Mar 30, 2025, 5:07 PM
+        return format(date, "MMM d, yyyy, h:mm a");
+      }
+    } catch (e) {
+      console.error("Error parsing date:", dateString, e);
+    }
+    // Fallback for invalid or unparseable dates
+    return "Date unavailable";
+  };
+
   return (
     <VStack gap={8} p={8} align="stretch">
       <Heading as="h1" size="2xl" textAlign="center">
         Cloud RSS
       </Heading>
       <Text fontSize="lg" textAlign="center">
-        Your browser-based RSS reader. Stay updated with the latest news.
+        A fast and secure RSS/ATOM reader.
       </Text>
 
       {isLoading && articles.length === 0 ? (
@@ -166,7 +186,9 @@ const LandingPage: React.FC = () => {
         </VStack>
       ) : error ? (
         <VStack py={8}>
-          <Text color="red.500">{error}</Text>
+          <Text color="red.500" mb={4}>
+            Error: {error}
+          </Text>
           <Button onClick={fetchArticles}>Retry</Button>
         </VStack>
       ) : (
@@ -176,25 +198,33 @@ const LandingPage: React.FC = () => {
               articles.map((article) => (
                 <Box
                   key={article.id}
+                  textAlign="left"
+                  width="100%"
                   borderWidth="1px"
                   borderRadius="lg"
                   overflow="hidden"
                   p={4}
                   _hover={{ shadow: "md", cursor: "pointer" }}
                   onClick={() => handleArticleClick(article)}
+                  _focusVisible={{
+                    outline: "none",
+                    boxShadow: "outline",
+                  }}
                 >
                   <Heading as="h3" size="md" mb={2}>
                     {article.title}
                   </Heading>
                   <Text>{formatSnippet(article.snippet)}</Text>
                   <Text fontSize="sm" color="gray.500" mt={2}>
-                    {article.source} •{" "}
-                    {new Date(article.publicationDatetime).toLocaleString()}
+                    {" "}
+                    {article.source} • {formatDate(article.publicationDatetime)}
                   </Text>
                 </Box>
               ))
             ) : (
-              <Text>No articles found.</Text>
+              <Text gridColumn="1 / -1" textAlign="center" py={8}>
+                No articles found.
+              </Text>
             )}
           </SimpleGrid>
         </Container>
