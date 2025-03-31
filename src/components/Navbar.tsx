@@ -21,8 +21,8 @@ const Navbar = () => {
   const minutes = String(currentTime.getMinutes()).padStart(2, "0");
   const seconds = String(currentTime.getSeconds()).padStart(2, "0");
 
-  // Construct the desired format "yyyy-mm-dd hh:mm:ss"
-  const formattedTime = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+  // Construct the desired format "yyyy/mm/dd hh:mm:ss"
+  const formattedTime = `${year}/${month}/${day} ${hours}:${minutes}:${seconds}`;
 
   return (
     <Box
