@@ -40,7 +40,7 @@ function stripHtmlComments(content: string): string {
   return content.replace(/^<!--\s*/, "").replace(/\s*-->$/, "");
 }
 
-// Extract the base URL from a full URL
+// Helper: Extract the base URL from a full URL
 function getBaseUrl(url: string): string {
   try {
     const parsedUrl = new URL(url);
@@ -51,7 +51,7 @@ function getBaseUrl(url: string): string {
   }
 }
 
-// Resolve relative URLs to absolute ones
+// Helper: Resolve relative URLs to absolute ones
 function resolveRelativeUrls(html: string, baseUrl: string): string {
   if (!baseUrl) return html;
 
@@ -99,7 +99,7 @@ function resolveRelativeUrls(html: string, baseUrl: string): string {
   }
 }
 
-// Extract clean text from HTML content
+// Helper: Extract clean text from HTML content
 function extractArticleContent(html: string, baseUrl: string): string {
   try {
     const { document } = parseHTML(html);
@@ -389,7 +389,7 @@ async function fetchArticleContentFromFeed(
   }
 }
 
-// Fetch article content from the original URL
+// Scrape article content from the original URL
 async function fetchArticleContent(url: string): Promise<string | null> {
   try {
     const response = await fetch(url);
