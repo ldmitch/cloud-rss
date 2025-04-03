@@ -57,8 +57,8 @@ The project is configured to deploy to Cloudflare Pages. You'll need to set up:
 1. [Cloud RSS Worker](https://github.com/ldmitch/cloud-rss-worker) must be deployed first
 2. A Cloudflare Pages project linked to your Cloud RSS repository
 3. A KV namespace named `ARTICLES` to store article previews
-	 - This should already have been created when you deployed Cloud RSS Worker
-4. Edit the KV namespace ID in [`wrangler.toml`](./wrangler.toml)
+	- This should already have been created when you deployed Cloud RSS Worker
+4. The KV namespace ID in [`wrangler.toml`](./wrangler.toml)
 
 ## License
 
