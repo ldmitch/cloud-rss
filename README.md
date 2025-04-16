@@ -66,4 +66,4 @@ The project is configured to deploy to Cloudflare Pages. You'll need to set up:
 
 ## Contributing
 
-Contributions are welcome-- feel free to submit a pull request.
+Contributions are welcome—feel free to submit a pull request.
