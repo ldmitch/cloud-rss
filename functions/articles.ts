@@ -27,7 +27,7 @@ export const onRequest: PagesFunction<Env> = async (context) => {
     return new Response(articlesJson, {
       headers: {
         "Content-Type": "application/json",
-        "Cache-Control": "public, s-maxage=1740, max-age=1740, must-revalidate",
+        "Cache-Control": "public, s-maxage=840, max-age=840, must-revalidate",
       },
     });
   } catch (error) {
