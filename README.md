@@ -1,6 +1,6 @@
 # cloud-rss
 
-A fast and secure, self-hostable RSS/ATOM reader front-end. Built with React and Cloudflare.
+A fast RSS/ATOM reader front-end. Built with React and deployed to Cloudflare.
 
 ## Overview
 
