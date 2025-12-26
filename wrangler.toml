@@ -1,9 +1,6 @@
 name = "cloud-rss"
-compatibility_date = "2025-02-14"
+compatibility_date = "2025-03-20"
 pages_build_output_dir = "./"
-
-[build]
-command = "pnpm install"
 
 [[kv_namespaces]]
 binding = "ARTICLES"
