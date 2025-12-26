@@ -1,19 +1,5 @@
 {
   "version": 1,
-  "include": ["/*"],
-  "exclude": ["/assets/*", "/images/*", "/_astro/*", "/favicon.ico"],
-  "routes": [
-    {
-      "pattern": "/articles",
-      "script": "functions/articles.ts"
-    },
-    {
-      "pattern": "/article/:id",
-      "script": "functions/article/[id].ts"
-    },
-    {
-      "pattern": "/*",
-      "serve": "index.html"
-    }
-  ]
+  "include": ["/articles", "/article/*"],
+  "exclude": []
 }

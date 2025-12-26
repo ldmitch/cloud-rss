@@ -1,9 +1,5 @@
 name = "cloud-rss"
 compatibility_date = "2025-02-14"
-main = "workers-site/index.js"
-
-[site]
-bucket = "./dist"
 
 [[kv_namespaces]]
 binding = "ARTICLES"

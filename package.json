@@ -1,41 +1,16 @@
 {
   "name": "cloud-rss",
   "license": "MIT",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "scripts": {
-    "dev": "vite",
-    "build": "tsc -b && vite build",
-    "lint": "eslint .",
-    "preview": "vite preview",
-    "wrangler": "tsc -b && vite build && wrangler pages dev ./dist --persist-to=../cloud-rss-worker/.wrangler/state"
+    "dev": "wrangler pages dev ./ --persist-to=../cloud-rss-worker/.wrangler/state",
+    "deploy": "wrangler pages deploy ./"
   },
   "dependencies": {
-    "@chakra-ui/react": "^3.14.2",
-    "@emotion/react": "^11.14.0",
-    "date-fns": "^4.1.0",
-    "dompurify": "^3.2.4",
-    "he": "^1.2.0",
-    "linkedom": "^0.18.9",
-    "next-themes": "^0.4.6",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0",
-    "react-icons": "^5.5.0"
+    "linkedom": "^0.18.9"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20250321.0",
-    "@eslint/js": "^9.23.0",
-    "@types/he": "^1.2.3",
-    "@types/react": "^19.0.12",
-    "@types/react-dom": "^19.0.4",
-    "@vitejs/plugin-react-swc": "^3.8.1",
-    "eslint": "^9.23.0",
-    "eslint-plugin-react-hooks": "^5.2.0",
-    "eslint-plugin-react-refresh": "^0.4.19",
-    "globals": "^16.0.0",
-    "typescript": "^5.8.2",
-    "typescript-eslint": "^8.28.0",
-    "vite": "^6.4.1",
-    "vite-tsconfig-paths": "^5.1.4",
     "wrangler": "^4.5.0"
   }
 }
