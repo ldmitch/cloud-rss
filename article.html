@@ -319,96 +319,11 @@
         return div.innerHTML;
       }
 
-      // Decode HTML entities
-      function decodeHtmlEntities(text) {
-        const textarea = document.createElement("textarea");
-        textarea.innerHTML = text;
-        return textarea.value;
-      }
-
-      // Process and sanitize article content
-      function processContent(content) {
-        if (!content || content.trim().length === 0) {
-          return "<p>No content available. Please view the original article.</p>";
-        }
-
-        // Decode HTML entities
-        let decodedContent;
-        try {
-          decodedContent = decodeHtmlEntities(content);
-        } catch (e) {
-          decodedContent = content;
-        }
-
-        // Check if content appears to be HTML
-        if (decodedContent.includes("<") && decodedContent.includes(">")) {
-          try {
-            const parser = new DOMParser();
-            const doc = parser.parseFromString(decodedContent, "text/html");
-
-            // Remove potentially dangerous elements
-            const dangerousElements = ["script", "style", "iframe", "object", "embed", "form"];
-            dangerousElements.forEach(function (tag) {
-              doc.body.querySelectorAll(tag).forEach(function (el) {
-                el.remove();
-              });
-            });
-
-            // Process images - remove fixed dimensions, ensure responsive
-            const images = doc.body.querySelectorAll("img");
-            images.forEach(function (img) {
-              img.removeAttribute("width");
-              img.removeAttribute("height");
-              img.removeAttribute("class");
-              img.removeAttribute("srcset");
-              img.style.maxWidth = "100%";
-              img.style.height = "auto";
-            });
-
-            // Make links open in new tab
-            const links = doc.body.querySelectorAll("a");
-            links.forEach(function (link) {
-              link.setAttribute("target", "_blank");
-              link.setAttribute("rel", "noopener noreferrer");
-            });
-
-            // Remove event handlers from all elements
-            const allElements = doc.body.querySelectorAll("*");
-            allElements.forEach(function (el) {
-              const attributes = Array.from(el.attributes);
-              attributes.forEach(function (attr) {
-                if (attr.name.startsWith("on")) {
-                  el.removeAttribute(attr.name);
-                }
-              });
-            });
-
-            return doc.body.innerHTML;
-          } catch (e) {
-            console.error("Error processing HTML content:", e);
-            return "<p>" + escapeHtml(decodedContent) + "</p>";
-          }
-        } else {
-          // Plain text - convert to paragraphs
-          return decodedContent
-            .split("\n\n")
-            .map(function (p) {
-              return p.trim();
-            })
-            .filter(function (p) {
-              return p.length > 0;
-            })
-            .map(function (p) {
-              return "<p>" + escapeHtml(p).replace(/\n/g, "<br>") + "</p>";
-            })
-            .join("");
-        }
-      }
-
       // Render article
       function renderArticle(article) {
         const date = formatDate(article.publicationDatetime);
-        const content = processContent(article.content || article.snippet);
+        const content =
+          article.content || "<p>No content available. Please view the original article.</p>";
 
         document.title = article.title + " - Cloud RSS";
 

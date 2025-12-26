@@ -40,6 +40,39 @@ function stripHtmlComments(content: string): string {
   return content.replace(/^<!--\s*/, "").replace(/\s*-->$/, "");
 }
 
+// Helper: Decode HTML entities to their corresponding characters
+function decodeHtmlEntities(text: string): string {
+  if (!text) return "";
+
+  const entities: { [key: string]: string } = {
+    "&amp;": "&",
+    "&lt;": "<",
+    "&gt;": ">",
+    "&quot;": '"',
+    "&apos;": "'",
+    "&nbsp;": " ",
+    "&ndash;": "–",
+    "&mdash;": "—",
+    "&lsquo;": "'",
+    "&rsquo;": "'",
+    "&sbquo;": "‚",
+    "&ldquo;": '"',
+    "&rdquo;": '"',
+    "&bdquo;": "„",
+  };
+
+  // Replace named entities
+  let result = text;
+  Object.keys(entities).forEach((entity) => {
+    result = result.replace(new RegExp(entity, "g"), entities[entity]);
+  });
+
+  // Replace numeric entities (decimal and hexadecimal)
+  return result
+    .replace(/&#(\d+);/g, (_, dec) => String.fromCharCode(parseInt(dec, 10)))
+    .replace(/&#x([0-9a-f]+);/gi, (_, hex) => String.fromCharCode(parseInt(hex, 16)));
+}
+
 // Helper: Extract the base URL from a full URL
 function getBaseUrl(url: string): string {
   try {
@@ -48,6 +81,72 @@ function getBaseUrl(url: string): string {
   } catch (error) {
     console.error("Error parsing URL:", error);
     return "";
+  }
+}
+
+// Helper: Sanitize HTML content for safe rendering
+function sanitizeHtml(html: string): string {
+  if (!html) return "";
+
+  try {
+    // Decode HTML entities first in case content is double-encoded
+    const decodedHtml = decodeHtmlEntities(html);
+    const { document } = parseHTML(`<div>${decodedHtml}</div>`);
+
+    // Remove dangerous elements
+    const dangerousElements = ["script", "style", "iframe", "object", "embed", "form", "noscript"];
+    dangerousElements.forEach((selector) => {
+      const elements = document.querySelectorAll(selector);
+      for (let i = 0; i < elements.length; i++) {
+        elements[i].remove();
+      }
+    });
+
+    // Strip event handlers (on*) from all elements
+    const allElements = document.querySelectorAll("*");
+    allElements.forEach((el: Element) => {
+      // Cast to any to access attributes array in linkedom
+      const attrs = (el as any).attributes || [];
+      const attrNames: string[] = [];
+      for (let i = 0; i < attrs.length; i++) {
+        if (attrs[i]?.name) {
+          attrNames.push(attrs[i].name);
+        }
+      }
+      attrNames.forEach((attrName: string) => {
+        if (attrName.toLowerCase().startsWith("on")) {
+          el.removeAttribute(attrName);
+        }
+      });
+    });
+
+    // Make all links open in new tabs
+    const links = document.querySelectorAll("a");
+    links.forEach((link: Element) => {
+      link.setAttribute("target", "_blank");
+      link.setAttribute("rel", "noopener noreferrer");
+    });
+
+    // Make images responsive and remove potentially problematic attributes
+    const images = document.querySelectorAll("img");
+    images.forEach((img: Element) => {
+      img.removeAttribute("width");
+      img.removeAttribute("height");
+      img.removeAttribute("srcset");
+      img.removeAttribute("data-nimg");
+
+      // Remove problematic inline styles but keep responsive styling
+      const style = img.getAttribute("style") || "";
+      if (style.includes("position:absolute") || style.includes("position: absolute")) {
+        img.removeAttribute("style");
+      }
+      img.setAttribute("style", "max-width: 100%; height: auto; position: static;");
+    });
+
+    return document.querySelector("div")?.innerHTML || "";
+  } catch (error) {
+    console.error("Error sanitizing HTML:", error);
+    return html;
   }
 }
 
@@ -67,11 +166,7 @@ function resolveRelativeUrls(html: string, baseUrl: string): string {
       // Only process relative URLs
       if (href.startsWith("/") && !href.startsWith("//")) {
         link.setAttribute("href", `${baseUrl}${href}`);
-      } else if (
-        !href.includes("://") &&
-        !href.startsWith("#") &&
-        !href.startsWith("mailto:")
-      ) {
+      } else if (!href.includes("://") && !href.startsWith("#") && !href.startsWith("mailto:")) {
         // Handle links without leading slash
         link.setAttribute("href", `${baseUrl}/${href}`);
       }
@@ -113,6 +208,8 @@ function extractArticleContent(html: string, baseUrl: string): string {
       "footer",
       "aside",
       "iframe",
+      "object",
+      "embed",
       "noscript",
       "svg",
       "form",
@@ -141,10 +238,7 @@ function extractArticleContent(html: string, baseUrl: string): string {
       }
       if (img.hasAttribute("style")) {
         const style = img.getAttribute("style") || "";
-        if (
-          style.includes("position:absolute") ||
-          style.includes("position: absolute")
-        ) {
+        if (style.includes("position:absolute") || style.includes("position: absolute")) {
           img.removeAttribute("style");
         }
       }
@@ -153,10 +247,7 @@ function extractArticleContent(html: string, baseUrl: string): string {
       }
 
       // Make sure images have reasonable max dimensions
-      img.setAttribute(
-        "style",
-        "max-width: 100%; height: auto; position: static;",
-      );
+      img.setAttribute("style", "max-width: 100%; height: auto; position: static;");
     });
 
     // Look for typical article content containers
@@ -180,9 +271,7 @@ function extractArticleContent(html: string, baseUrl: string): string {
 }
 
 // Fetch article content from RSS/ATOM feed
-async function fetchArticleContentFromFeed(
-  article: Article,
-): Promise<string | null> {
+async function fetchArticleContentFromFeed(article: Article): Promise<string | null> {
   try {
     const url = article.url;
     const sourceUrl = article.sourceUrl;
@@ -192,8 +281,7 @@ async function fetchArticleContentFromFeed(
 
     const response = await fetch(sourceUrl, {
       headers: {
-        Accept:
-          "application/rss+xml, application/atom+xml, application/xml, text/xml",
+        Accept: "application/rss+xml, application/atom+xml, application/xml, text/xml",
       },
     });
 
@@ -309,11 +397,9 @@ async function fetchArticleContentFromFeed(
           const fullItemXml = item.outerHTML || "";
           // Try to locate the specific content element in the raw XML
           let contentTagName = "";
-          if (item.querySelector("content\\:encoded"))
-            contentTagName = "content:encoded";
+          if (item.querySelector("content\\:encoded")) contentTagName = "content:encoded";
           else if (item.querySelector("content")) contentTagName = "content";
-          else if (item.querySelector("description"))
-            contentTagName = "description";
+          else if (item.querySelector("description")) contentTagName = "description";
           else if (item.querySelector("summary")) contentTagName = "summary";
 
           console.log(`Content element tag: ${contentTagName}`);
@@ -332,9 +418,7 @@ async function fetchArticleContentFromFeed(
               content = stripCDATA(content);
               // Next, remove any HTML comment wrappers
               content = stripHtmlComments(content);
-              console.log(
-                `Extracted content using raw XML regex, length: ${content.length}`,
-              );
+              console.log(`Extracted content using raw XML regex, length: ${content.length}`);
             } else {
               // Fall back to DOM-based extraction
               const isHtmlType = contentElement.getAttribute("type") === "html";
@@ -381,10 +465,7 @@ async function fetchArticleContentFromFeed(
     console.log(`Article with URL ${url} not found in feed`);
     return null;
   } catch (error) {
-    console.error(
-      `Error fetching article content from feed ${article.sourceUrl}:`,
-      error,
-    );
+    console.error(`Error fetching article content from feed ${article.sourceUrl}:`, error);
     return null;
   }
 }
@@ -442,10 +523,11 @@ export const onRequest: PagesFunction<Env> = async (context) => {
       console.log(`Successfully fetched content from feed for ${article.url}`);
     }
 
+    // Sanitize the content before sending to client
     if (content) {
-      article.content = content;
+      article.content = sanitizeHtml(content);
     } else {
-      article.content = article.snippet;
+      article.content = sanitizeHtml(article.snippet);
     }
 
     return new Response(JSON.stringify(article), {
@@ -458,12 +540,9 @@ export const onRequest: PagesFunction<Env> = async (context) => {
     });
   } catch (error) {
     console.error("Error retrieving article:", error);
-    return new Response(
-      JSON.stringify({ error: "Failed to retrieve article" }),
-      {
-        status: 500,
-        headers: { "Content-Type": "application/json" },
-      },
-    );
+    return new Response(JSON.stringify({ error: "Failed to retrieve article" }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" },
+    });
   }
 };

@@ -177,49 +177,6 @@
     <script>
       const mainEl = document.getElementById("main");
 
-      // Strip HTML tags and truncate text
-      function formatSnippet(htmlContent, maxLength = 150) {
-        try {
-          const parser = new DOMParser();
-          const doc = parser.parseFromString("<div>" + htmlContent + "</div>", "text/html");
-
-          // Remove unwanted elements
-          const elementsToRemove = [
-            "script",
-            "style",
-            "nav",
-            "header",
-            "footer",
-            "aside",
-            "iframe",
-            "noscript",
-            "svg",
-            "form",
-            "button",
-          ];
-          elementsToRemove.forEach(function (selector) {
-            doc.body.querySelectorAll(selector).forEach(function (el) {
-              el.remove();
-            });
-          });
-
-          let text = doc.body.textContent || "";
-          text = text.replace(/\s+/g, " ").trim();
-
-          if (text.length > maxLength) {
-            return text.substring(0, maxLength) + "…";
-          }
-          return text;
-        } catch (e) {
-          // Fallback: simple regex strip
-          const stripped = htmlContent
-            .replace(/<[^>]*>?/gm, "")
-            .replace(/\s+/g, " ")
-            .trim();
-          return stripped.length > maxLength ? stripped.substring(0, maxLength) + "…" : stripped;
-        }
-      }
-
       // Format date for display
       function formatDate(dateString) {
         try {
@@ -249,7 +206,7 @@
         let html = '<div class="articles-grid">';
 
         articles.forEach(function (article) {
-          const snippet = formatSnippet(article.snippet);
+          const snippet = article.snippetText || "";
           const date = formatDate(article.publicationDatetime);
 
           html +=
