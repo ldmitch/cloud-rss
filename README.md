@@ -6,7 +6,7 @@ A simple web-based RSS and ATOM reader deployed to Cloudflare Pages.
 
 Cloud RSS is a front-end for my [Cloud RSS Worker](https://github.com/ldmitch/cloud-rss-worker), allowing you to view a list of articles fetched from Cloudflare KV. The Worker is responsible for fetching the articles from various RSS/ATOM feeds and caching them in KV storage. Individual articles are fetched directly by a Cloudflare Pages Function and are returned to the front-end for display, meaning that clients' IP addresses are never revealed to the feed providers.
 
-The list of available articles is updated every 15 minutes, and the last 48 hours of history is viewable.
+The list of available articles is updated every 15 minutes, and the last seven days of history is viewable.
 
 ## Setup
 
