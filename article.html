@@ -8,6 +8,38 @@
     <link rel="icon" type="image/png" sizes="16x16" href="/public/favicon-16x16.png" />
     <title>Article - Cloud RSS</title>
     <style>
+      :root {
+        --bg-primary: #f7f7f7;
+        --bg-card: white;
+        --text-primary: #1a1a1a;
+        --text-secondary: #666;
+        --text-muted: #555;
+        --text-meta: #888;
+        --border-color: #e0e0e0;
+        --accent-color: #3182ce;
+        --accent-hover: #2c5282;
+        --error-color: #c53030;
+        --spinner-track: #e0e0e0;
+        --code-bg: #f5f5f5;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg-primary: #1a1a1a;
+          --bg-card: #2d2d2d;
+          --text-primary: #e5e5e5;
+          --text-secondary: #a0a0a0;
+          --text-muted: #b0b0b0;
+          --text-meta: #888;
+          --border-color: #404040;
+          --accent-color: #63b3ed;
+          --accent-hover: #4299e1;
+          --error-color: #fc8181;
+          --spinner-track: #404040;
+          --code-bg: #3d3d3d;
+        }
+      }
+
       * {
         box-sizing: border-box;
         margin: 0;
@@ -16,8 +48,8 @@
 
       body {
         font-family: Menlo, Monaco, "Courier New", monospace;
-        background-color: #f7f7f7;
-        color: #1a1a1a;
+        background-color: var(--bg-primary);
+        color: var(--text-primary);
         line-height: 1.6;
         min-height: 100vh;
       }
@@ -31,7 +63,7 @@
       .back-link {
         display: inline-flex;
         align-items: center;
-        color: #3182ce;
+        color: var(--accent-color);
         text-decoration: none;
         font-size: 0.9rem;
         margin-bottom: 1.5rem;
@@ -53,15 +85,15 @@
       }
 
       .loading {
-        color: #666;
+        color: var(--text-secondary);
       }
 
       .spinner {
         display: inline-block;
         width: 24px;
         height: 24px;
-        border: 3px solid #e0e0e0;
-        border-top-color: #3182ce;
+        border: 3px solid var(--spinner-track);
+        border-top-color: var(--accent-color);
         border-radius: 50%;
         animation: spin 1s linear infinite;
         margin-bottom: 1rem;
@@ -74,14 +106,14 @@
       }
 
       .error {
-        color: #c53030;
+        color: var(--error-color);
       }
 
       .error a {
         display: inline-block;
         margin-top: 1rem;
         padding: 0.5rem 1.5rem;
-        background: #3182ce;
+        background: var(--accent-color);
         color: white;
         text-decoration: none;
         border-radius: 4px;
@@ -89,12 +121,12 @@
       }
 
       .error a:hover {
-        background: #2c5282;
+        background: var(--accent-hover);
       }
 
       .article {
-        background: white;
-        border: 1px solid #e0e0e0;
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
         border-radius: 8px;
         padding: 2rem;
       }
@@ -102,7 +134,7 @@
       .article-header {
         margin-bottom: 1.5rem;
         padding-bottom: 1.5rem;
-        border-bottom: 1px solid #e0e0e0;
+        border-bottom: 1px solid var(--border-color);
       }
 
       .article-header h1 {
@@ -113,14 +145,14 @@
 
       .article-meta {
         font-size: 0.8rem;
-        color: #888;
+        color: var(--text-meta);
         margin-bottom: 0.75rem;
       }
 
       .article-link {
         display: inline-flex;
         align-items: center;
-        color: #3182ce;
+        color: var(--accent-color);
         font-size: 0.85rem;
         text-decoration: none;
       }
@@ -184,7 +216,7 @@
       }
 
       .article-content a {
-        color: #3182ce;
+        color: var(--accent-color);
         text-decoration: underline;
       }
 
@@ -213,16 +245,16 @@
       }
 
       .article-content blockquote {
-        border-left: 3px solid #e0e0e0;
+        border-left: 3px solid var(--border-color);
         padding-left: 1rem;
         margin: 1rem 0;
-        color: #555;
+        color: var(--text-muted);
         font-style: italic;
       }
 
       .article-content pre,
       .article-content code {
-        background: #f5f5f5;
+        background: var(--code-bg);
         border-radius: 4px;
         font-family: inherit;
       }
@@ -251,13 +283,13 @@
 
       .article-content th,
       .article-content td {
-        border: 1px solid #e0e0e0;
+        border: 1px solid var(--border-color);
         padding: 0.5rem;
         text-align: left;
       }
 
       .article-content th {
-        background: #f5f5f5;
+        background: var(--code-bg);
       }
 
       .article-content figure {
@@ -266,7 +298,7 @@
 
       .article-content figcaption {
         font-size: 0.85rem;
-        color: #666;
+        color: var(--text-secondary);
         text-align: center;
         margin-top: 0.5rem;
       }
